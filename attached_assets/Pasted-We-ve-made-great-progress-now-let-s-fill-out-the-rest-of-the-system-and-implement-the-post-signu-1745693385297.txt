@@ -1,0 +1,54 @@
+We’ve made great progress—now let’s fill out the rest of the system **and** implement the post-signup onboarding flow. Apply all changes directly to our existing codebase, in one pass, without pausing for confirmations—do **not** scaffold a new project.
+
+1. EXTEND FEATURE-BASED CLASSES  
+   - Booking is fully scaffolded; now do the same for:  
+     • Analytics (`/features/analytics`)  
+     • Guest Management (`/features/guest`)  
+     • Property Management (`/features/property`)  
+     • Staff Management (`/features/staff`)  
+   - For each feature, create:  
+     • `List`, `Details`, `Form`, and `Modal` components  
+     • Tailwind utility class files (`*.module.css` or `*.styles.ts`) under each feature, mirroring booking’s folder structure and naming conventions.  
+   - In `/shared/components` and `/shared/hooks`, add any missing shared primitives needed by these features (e.g. chart components for analytics, file-upload fields for guest ID proof, map picker for property location).
+
+2. CENTRALIZE SHARED STYLES & CLASSES  
+   - Audit `/shared/components` and create or update CSS modules or style files so that **all** shared UI elements—Buttons, Inputs, Tables, Modals, Notifications—expose the **same** set of variant classes (size, color, state) used by the booking feature.  
+   - Ensure each shared component accepts a `className` prop and merges it with its default Tailwind classes.
+
+3. POST-SIGNUP ONBOARDING WIZARD  
+   - Launch a 3-step wizard immediately after signup/login, using the existing modal/page step logic—**no** new UI paradigms.  
+   **Step 1: BUSINESS & PROPERTY BASICS**  
+     • Collect property name, contact number, type, description (validate GST if provided).  
+     • Capture address: street (with optional live-location lookup), secondary address, city, state, country, postal code, currency.  
+   **Step 2: PROPERTY CONFIGURATION**  
+     • Checklist of amenities.  
+     • Upload up to 20 property photos with client-side compression.  
+     • Configure one or more room setups:  
+       - Bed type (name, capacity, custom ID)  
+       - Adult/child occupancy (default, minimum, extra pricing)  
+       - Room-specific amenities  
+       - Upload up to 20 photos per bed type  
+     • “Add another bed type” repeats only the room-config steps.  
+   **Step 3: POLICIES & LAUNCH**  
+     • Policy builder: name, description, rule fields, plus templated policy options.  
+     • Summary review screen showing **all** inputs.  
+     • On “Finish,” call `onboardingService.completeOnboarding()` (or mock) and redirect to the dashboard.  
+   - Match **exactly** the UI labels, button text, progress indicator, and color palette from the supplied screenshots.  
+   - Validate each step before proceeding; show loading and error states.
+
+4. API SERVICE CLASSES  
+   - In `/shared/services`, create or extend:  
+     • `onboardingService` with methods: `saveBusinessBasics()`, `savePropertyConfig()`, `completeOnboarding()`.  
+     • `analyticsService`, `guestService`, `propertyService`, `staffService` each exposing typed methods to call your `ApiClient`.  
+   - Ensure all service methods return typed Promises and surface loading/error states to the UI.
+
+5. IMPLEMENTATION REQUIREMENTS  
+   - Work **within** the current codebase; do **not** scaffold a fresh project.  
+   - Follow existing naming conventions, folder structure, and component patterns.  
+   - Ensure full responsiveness at mobile/tablet/desktop breakpoints.  
+   - Provide complete updated code for:  
+     • Each new feature folder (components + styles)  
+     • Shared style files and component updates  
+     • The 3-step onboarding wizard components, routes, and styling  
+     • All new or extended service classes  
+   - Deliver everything in **one** batch, ready to merge—no mid-stream confirmations or clarifications.

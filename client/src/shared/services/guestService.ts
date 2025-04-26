@@ -1,263 +1,235 @@
 /**
  * Guest Service
  * 
- * Handles all API communication related to guests and customer data
+ * Service for managing hotel guests.
  */
 
+import { ApiResponse } from './api';
+import apiClient from './api';
 import { Guest, InsertGuest } from '@shared/schema';
-import apiClient, { ApiResponse } from './api';
-import { guestsData, getGuestById } from '@/lib/data';
 
-// API endpoints
+// API endpoints for guests
 const ENDPOINTS = {
   ALL: '/guests',
-  DETAIL: (id: number | string) => `/guests/${id}`,
+  DETAIL: (id: number) => `/guests/${id}`,
   SEARCH: '/guests/search',
+  BY_EMAIL: (email: string) => `/guests/email/${email}`,
   LOYALTY: '/guests/loyalty',
-  HISTORY: (id: number | string) => `/guests/${id}/history`,
+  DOCUMENTS: (id: number) => `/guests/${id}/documents`,
+  PREFERENCES: (id: number) => `/guests/${id}/preferences`,
+  HISTORY: (id: number) => `/guests/${id}/history`,
 };
 
-// Mocked guest service utilizing current data imported from lib/data.ts
-// These will be replaced with actual API calls when backend is ready
 class GuestService {
   /**
    * Get all guests
    */
   async getAll(): Promise<ApiResponse<Guest[]>> {
-    // This will be replaced with:
-    // return apiClient.get<Guest[]>(ENDPOINTS.ALL);
-    
-    return {
-      data: guestsData,
-      status: 200,
-      success: true
-    };
+    try {
+      const response = await apiClient.get<Guest[]>(ENDPOINTS.ALL);
+      return response;
+    } catch (error: any) {
+      return {
+        data: [],
+        status: error.status || 500,
+        message: error.message || 'Failed to fetch guests'
+      };
+    }
   }
 
   /**
-   * Get a single guest by ID
+   * Get a guest by ID
    */
   async getById(id: number): Promise<ApiResponse<Guest>> {
-    // This will be replaced with:
-    // return apiClient.get<Guest>(ENDPOINTS.DETAIL(id));
-    
-    const guest = getGuestById(id);
-    if (!guest) {
+    try {
+      const response = await apiClient.get<Guest>(ENDPOINTS.DETAIL(id));
+      return response;
+    } catch (error: any) {
       return {
-        error: 'Guest not found',
-        status: 404,
-        success: false
+        data: {} as Guest,
+        status: error.status || 500,
+        message: error.message || 'Failed to fetch guest'
       };
     }
-    
-    return {
-      data: guest,
-      status: 200,
-      success: true
-    };
   }
 
   /**
-   * Search for guests by name, email, phone, etc.
+   * Search guests by name, email, or phone
    */
   async search(query: string): Promise<ApiResponse<Guest[]>> {
-    // This will be replaced with:
-    // return apiClient.get<Guest[]>(ENDPOINTS.SEARCH, { params: { query } });
-    
-    // Basic search implementation
-    const normalizedQuery = query.toLowerCase();
-    const results = guestsData.filter(guest => 
-      guest.firstName.toLowerCase().includes(normalizedQuery) ||
-      guest.lastName.toLowerCase().includes(normalizedQuery) ||
-      guest.email.toLowerCase().includes(normalizedQuery) ||
-      guest.phone.includes(normalizedQuery)
-    );
-    
-    return {
-      data: results,
-      status: 200,
-      success: true
-    };
-  }
-
-  /**
-   * Get guests with loyalty program details
-   */
-  async getLoyaltyMembers(): Promise<ApiResponse<Guest[]>> {
-    // This will be replaced with:
-    // return apiClient.get<Guest[]>(ENDPOINTS.LOYALTY);
-    
-    // Filter guests who are in loyalty program
-    const loyaltyMembers = guestsData.filter(guest => guest.loyaltyInfo && guest.loyaltyInfo.tier);
-    
-    return {
-      data: loyaltyMembers,
-      status: 200,
-      success: true
-    };
-  }
-
-  /**
-   * Get a guest's stay history
-   */
-  async getStayHistory(id: number): Promise<ApiResponse<any[]>> {
-    // This will be replaced with:
-    // return apiClient.get<any[]>(ENDPOINTS.HISTORY(id));
-    
-    const guest = getGuestById(id);
-    if (!guest) {
+    try {
+      const response = await apiClient.get<Guest[]>(ENDPOINTS.SEARCH, { query });
+      return response;
+    } catch (error: any) {
       return {
-        error: 'Guest not found',
-        status: 404,
-        success: false
+        data: [],
+        status: error.status || 500,
+        message: error.message || 'Failed to search guests'
       };
     }
-    
-    return {
-      data: guest.stayHistory || [],
-      status: 200,
-      success: true
-    };
+  }
+
+  /**
+   * Get a guest by email
+   */
+  async getByEmail(email: string): Promise<ApiResponse<Guest>> {
+    try {
+      const response = await apiClient.get<Guest>(ENDPOINTS.BY_EMAIL(email));
+      return response;
+    } catch (error: any) {
+      return {
+        data: {} as Guest,
+        status: error.status || 500,
+        message: error.message || 'Failed to fetch guest by email'
+      };
+    }
+  }
+
+  /**
+   * Get loyalty information for a guest
+   */
+  async getLoyaltyInfo(id: number): Promise<ApiResponse<any>> {
+    try {
+      const response = await apiClient.get(`${ENDPOINTS.LOYALTY}/${id}`);
+      
+      // Format loyalty tier information
+      const data = response.data || {};
+      const loyaltyData = {
+        tier: data.tier || 'Standard',
+        points: data.points || 0,
+        expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
+        benefits: data.benefits || [],
+        history: data.history || [],
+      };
+      
+      return {
+        ...response,
+        data: loyaltyData
+      };
+    } catch (error: any) {
+      return {
+        data: {
+          tier: 'Standard',
+          points: 0,
+          expiryDate: null,
+          benefits: [],
+          history: [],
+        },
+        status: error.status || 500,
+        message: error.message || 'Failed to fetch loyalty information'
+      };
+    }
   }
 
   /**
    * Create a new guest
    */
-  async create(guest: InsertGuest): Promise<ApiResponse<Guest>> {
-    // This will be replaced with:
-    // return apiClient.post<Guest>(ENDPOINTS.ALL, guest);
-    
-    // For now, simply return a mocked response with the data
-    const newGuest: Guest = {
-      ...guest,
-      id: Math.max(...guestsData.map(g => g.id)) + 1,
-    };
-    
-    return {
-      data: newGuest,
-      status: 201,
-      success: true
-    };
+  async create(data: InsertGuest): Promise<ApiResponse<Guest>> {
+    try {
+      const response = await apiClient.post<Guest>(ENDPOINTS.ALL, data);
+      return response;
+    } catch (error: any) {
+      return {
+        data: {} as Guest,
+        status: error.status || 500,
+        message: error.message || 'Failed to create guest'
+      };
+    }
   }
 
   /**
-   * Update an existing guest
+   * Update a guest
    */
   async update(id: number, data: Partial<Guest>): Promise<ApiResponse<Guest>> {
-    // This will be replaced with:
-    // return apiClient.patch<Guest>(ENDPOINTS.DETAIL(id), data);
-    
-    const guest = getGuestById(id);
-    if (!guest) {
+    try {
+      const response = await apiClient.patch<Guest>(ENDPOINTS.DETAIL(id), data);
+      return response;
+    } catch (error: any) {
       return {
-        error: 'Guest not found',
-        status: 404,
-        success: false
+        data: {} as Guest,
+        status: error.status || 500,
+        message: error.message || 'Failed to update guest'
       };
     }
-    
-    const updated = { ...guest, ...data };
-    
-    return {
-      data: updated,
-      status: 200,
-      success: true
-    };
   }
 
   /**
    * Delete a guest
    */
   async delete(id: number): Promise<ApiResponse<void>> {
-    // This will be replaced with:
-    // return apiClient.delete<void>(ENDPOINTS.DETAIL(id));
-    
-    const guest = getGuestById(id);
-    if (!guest) {
+    try {
+      const response = await apiClient.delete(ENDPOINTS.DETAIL(id));
+      return response;
+    } catch (error: any) {
       return {
-        error: 'Guest not found',
-        status: 404,
-        success: false
+        data: undefined,
+        status: error.status || 500,
+        message: error.message || 'Failed to delete guest'
       };
     }
-    
-    return {
-      status: 204,
-      success: true
-    };
   }
 
   /**
-   * Update guest loyalty information
+   * Upload guest ID document or proof
    */
-  async updateLoyalty(
-    id: number, 
-    loyaltyInfo: { tier: string; points: number; memberSince?: string }
-  ): Promise<ApiResponse<Guest>> {
-    // This will be replaced with:
-    // return apiClient.patch<Guest>(`${ENDPOINTS.DETAIL(id)}/loyalty`, loyaltyInfo);
-    
-    const guest = getGuestById(id);
-    if (!guest) {
+  async uploadDocument(id: number, file: File, documentType: string): Promise<ApiResponse<string>> {
+    try {
+      const formData = new FormData();
+      formData.append('document', file);
+      formData.append('documentType', documentType);
+      
+      const response = await apiClient.upload<string>(ENDPOINTS.DOCUMENTS(id), formData);
+      return response;
+    } catch (error: any) {
       return {
-        error: 'Guest not found',
-        status: 404,
-        success: false
+        data: '',
+        status: error.status || 500,
+        message: error.message || 'Failed to upload document'
       };
     }
-    
-    const updated = { 
-      ...guest, 
-      loyaltyInfo: { ...(guest.loyaltyInfo || {}), ...loyaltyInfo }
-    };
-    
-    return {
-      data: updated,
-      status: 200,
-      success: true
-    };
   }
 
   /**
-   * Add stay record to guest history
+   * Update guest preferences
    */
-  async addStayRecord(
-    id: number, 
-    stayRecord: { 
-      reservationId: number; 
-      checkIn: string; 
-      checkOut: string;
-      roomNumber: string;
-      totalSpent: number;
-    }
-  ): Promise<ApiResponse<Guest>> {
-    // This will be replaced with:
-    // return apiClient.post<Guest>(`${ENDPOINTS.DETAIL(id)}/history`, stayRecord);
-    
-    const guest = getGuestById(id);
-    if (!guest) {
+  async updatePreferences(id: number, preferences: {
+    roomPreferences?: string[];
+    dietaryRestrictions?: string[];
+    specialRequests?: string[];
+    communicationPreferences?: {
+      email?: boolean;
+      sms?: boolean;
+      phone?: boolean;
+    };
+  }): Promise<ApiResponse<any>> {
+    try {
+      const response = await apiClient.patch(ENDPOINTS.PREFERENCES(id), preferences);
+      return response;
+    } catch (error: any) {
       return {
-        error: 'Guest not found',
-        status: 404,
-        success: false
+        data: {},
+        status: error.status || 500,
+        message: error.message || 'Failed to update preferences'
       };
     }
-    
-    const updated = { 
-      ...guest, 
-      stayHistory: [...(guest.stayHistory || []), stayRecord]
-    };
-    
-    return {
-      data: updated,
-      status: 200,
-      success: true
-    };
+  }
+
+  /**
+   * Get guest stay history
+   */
+  async getStayHistory(id: number): Promise<ApiResponse<any[]>> {
+    try {
+      const response = await apiClient.get<any[]>(ENDPOINTS.HISTORY(id));
+      return response;
+    } catch (error: any) {
+      return {
+        data: [],
+        status: error.status || 500,
+        message: error.message || 'Failed to fetch stay history'
+      };
+    }
   }
 }
 
-// Export a singleton instance
 export const guestService = new GuestService();
-
-// Default export
 export default guestService;

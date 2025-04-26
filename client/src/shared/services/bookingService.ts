@@ -1,193 +1,233 @@
 /**
  * Booking Service
  * 
- * Handles all API communication related to bookings and reservations
+ * Service for managing bookings and reservations.
  */
 
+import { ApiResponse } from './api';
+import apiClient from './api';
 import { Reservation, InsertReservation } from '@shared/schema';
-import apiClient, { ApiResponse } from './api';
-import { getRecentReservations, reservationsData } from '@/lib/data';
+import { BookingStats } from '@/features/booking/types';
+import { API_CONFIG } from '../config';
 
-// API endpoints
+// API endpoints for bookings
 const ENDPOINTS = {
   ALL: '/reservations',
-  RECENT: '/reservations/recent',
-  DETAIL: (id: number | string) => `/reservations/${id}`,
-  STATUS: (status: string) => `/reservations/status/${status}`,
-  BY_GUEST: (guestId: number | string) => `/guests/${guestId}/reservations`,
-  BY_ROOM: (roomId: number | string) => `/rooms/${roomId}/reservations`,
+  DETAIL: (id: number) => `/reservations/${id}`,
+  RECENT: (limit: number = 5) => `/reservations/recent?limit=${limit}`,
+  BY_STATUS: (status: string) => `/reservations/status/${status}`,
+  BY_GUEST: (guestId: number) => `/reservations/guest/${guestId}`,
+  BY_ROOM: (roomId: number) => `/reservations/room/${roomId}`,
+  STATS: '/reservations/stats',
   AVAILABILITY: '/reservations/availability',
 };
 
-// Mocked reservation service utilizing current data imported from lib/data.ts
-// These will be replaced with actual API calls when backend is ready
 class BookingService {
   /**
-   * Get all reservations
+   * Get all bookings
    */
   async getAll(): Promise<ApiResponse<Reservation[]>> {
-    // This will be replaced with:
-    // return apiClient.get<Reservation[]>(ENDPOINTS.ALL);
-    
-    return {
-      data: reservationsData,
-      status: 200,
-      success: true
-    };
+    try {
+      const response = await apiClient.get<Reservation[]>(ENDPOINTS.ALL);
+      return {
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: [],
+        status: error.status || 500,
+        error: error.message || 'Failed to fetch bookings',
+      };
+    }
   }
 
   /**
-   * Get a single reservation by ID
+   * Get a booking by ID
    */
   async getById(id: number): Promise<ApiResponse<Reservation>> {
-    // This will be replaced with:
-    // return apiClient.get<Reservation>(ENDPOINTS.DETAIL(id));
-    
-    const reservation = reservationsData.find(r => r.id === id);
-    if (!reservation) {
+    try {
+      const response = await apiClient.get<Reservation>(ENDPOINTS.DETAIL(id));
       return {
-        error: 'Reservation not found',
-        status: 404,
-        success: false
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: {} as Reservation,
+        status: error.status || 500,
+        error: error.message || 'Failed to fetch booking',
       };
     }
-    
-    return {
-      data: reservation,
-      status: 200,
-      success: true
-    };
   }
 
   /**
-   * Get recent reservations with optional limit
+   * Get recent bookings with limit
    */
   async getRecent(limit: number = 5): Promise<ApiResponse<Reservation[]>> {
-    // This will be replaced with:
-    // return apiClient.get<Reservation[]>(ENDPOINTS.RECENT, { params: { limit } });
-    
-    return {
-      data: getRecentReservations(limit),
-      status: 200,
-      success: true
-    };
+    try {
+      const response = await apiClient.get<Reservation[]>(ENDPOINTS.RECENT(limit));
+      return {
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: [],
+        status: error.status || 500,
+        error: error.message || 'Failed to fetch recent bookings',
+      };
+    }
   }
 
   /**
-   * Get reservations by status
+   * Get bookings by status
    */
   async getByStatus(status: string): Promise<ApiResponse<Reservation[]>> {
-    // This will be replaced with:
-    // return apiClient.get<Reservation[]>(ENDPOINTS.STATUS(status));
-    
-    const filtered = reservationsData.filter(r => r.status === status);
-    return {
-      data: filtered,
-      status: 200,
-      success: true
-    };
+    try {
+      const response = await apiClient.get<Reservation[]>(ENDPOINTS.BY_STATUS(status));
+      return {
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: [],
+        status: error.status || 500,
+        error: error.message || 'Failed to fetch bookings by status',
+      };
+    }
   }
 
   /**
-   * Get reservations for a specific guest
+   * Get bookings for a guest
    */
   async getByGuest(guestId: number): Promise<ApiResponse<Reservation[]>> {
-    // This will be replaced with:
-    // return apiClient.get<Reservation[]>(ENDPOINTS.BY_GUEST(guestId));
-    
-    const filtered = reservationsData.filter(r => r.guestIds.includes(guestId));
-    return {
-      data: filtered,
-      status: 200,
-      success: true
-    };
+    try {
+      const response = await apiClient.get<Reservation[]>(ENDPOINTS.BY_GUEST(guestId));
+      const bookings = response.data.map(r => ({
+        ...r,
+        guestIds: Array.isArray(r.guestIds) ? r.guestIds : [r.guestIds]
+      }));
+      return {
+        ...response,
+        data: bookings,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: [],
+        status: error.status || 500,
+        error: error.message || 'Failed to fetch guest bookings',
+      };
+    }
   }
 
   /**
-   * Get reservations for a specific room
+   * Get bookings for a room
    */
   async getByRoom(roomId: number): Promise<ApiResponse<Reservation[]>> {
-    // This will be replaced with:
-    // return apiClient.get<Reservation[]>(ENDPOINTS.BY_ROOM(roomId));
-    
-    const filtered = reservationsData.filter(r => r.roomId === roomId);
-    return {
-      data: filtered,
-      status: 200,
-      success: true
-    };
+    try {
+      const response = await apiClient.get<Reservation[]>(ENDPOINTS.BY_ROOM(roomId));
+      return {
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: [],
+        status: error.status || 500,
+        error: error.message || 'Failed to fetch room bookings',
+      };
+    }
   }
 
   /**
-   * Create a new reservation
+   * Create a new booking
    */
-  async create(reservation: InsertReservation): Promise<ApiResponse<Reservation>> {
-    // This will be replaced with:
-    // return apiClient.post<Reservation>(ENDPOINTS.ALL, reservation);
-    
-    // For now, simply return a mocked response with the data
-    const newReservation: Reservation = {
-      ...reservation,
-      id: Math.max(...reservationsData.map(r => r.id)) + 1,
-      createdAt: new Date(),
-    };
-    
-    return {
-      data: newReservation,
-      status: 201,
-      success: true
-    };
+  async create(data: InsertReservation): Promise<ApiResponse<Reservation>> {
+    try {
+      // Convert string dates to Date objects
+      const createdAt = new Date();
+      
+      const payload = {
+        ...data,
+        createdAt
+      };
+      
+      const response = await apiClient.post<Reservation>(ENDPOINTS.ALL, payload);
+      return {
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: {} as Reservation,
+        status: error.status || 500,
+        error: error.message || 'Failed to create booking',
+      };
+    }
   }
 
   /**
-   * Update an existing reservation
+   * Update a booking
    */
   async update(id: number, data: Partial<Reservation>): Promise<ApiResponse<Reservation>> {
-    // This will be replaced with:
-    // return apiClient.patch<Reservation>(ENDPOINTS.DETAIL(id), data);
-    
-    const reservation = reservationsData.find(r => r.id === id);
-    if (!reservation) {
+    try {
+      const response = await apiClient.patch<Reservation>(ENDPOINTS.DETAIL(id), data);
       return {
-        error: 'Reservation not found',
-        status: 404,
-        success: false
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: {} as Reservation,
+        status: error.status || 500,
+        error: error.message || 'Failed to update booking',
       };
     }
-    
-    const updated = { ...reservation, ...data };
-    
-    return {
-      data: updated,
-      status: 200,
-      success: true
-    };
   }
 
   /**
-   * Delete a reservation
+   * Delete a booking
    */
   async delete(id: number): Promise<ApiResponse<void>> {
-    // This will be replaced with:
-    // return apiClient.delete<void>(ENDPOINTS.DETAIL(id));
-    
-    const reservation = reservationsData.find(r => r.id === id);
-    if (!reservation) {
+    try {
+      const response = await apiClient.delete(ENDPOINTS.DETAIL(id));
       return {
-        error: 'Reservation not found',
-        status: 404,
-        success: false
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: undefined,
+        status: error.status || 500,
+        error: error.message || 'Failed to delete booking',
       };
     }
-    
-    return {
-      status: 204,
-      success: true
-    };
   }
 
   /**
-   * Check room availability for a date range
+   * Get booking statistics
+   */
+  async getStats(): Promise<ApiResponse<BookingStats>> {
+    try {
+      const response = await apiClient.get<BookingStats>(ENDPOINTS.STATS);
+      return {
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: {} as BookingStats,
+        status: error.status || 500,
+        error: error.message || 'Failed to fetch booking stats',
+      };
+    }
+  }
+
+  /**
+   * Check room availability for given dates
    */
   async checkAvailability(params: {
     startDate: Date | string;
@@ -195,27 +235,21 @@ class BookingService {
     roomType?: string;
     guestCount?: number;
   }): Promise<ApiResponse<any>> {
-    // This will be replaced with:
-    // return apiClient.get(ENDPOINTS.AVAILABILITY, { params });
-    
-    return {
-      data: {
-        available: true,
-        availableRooms: 5,
-        roomOptions: [
-          { id: 1, number: '101', type: 'Standard Room', baseRate: 99 },
-          { id: 2, number: '102', type: 'Standard Room', baseRate: 99 },
-          // etc...
-        ]
-      },
-      status: 200,
-      success: true
-    };
+    try {
+      const response = await apiClient.post(ENDPOINTS.AVAILABILITY, params);
+      return {
+        ...response,
+        success: true,
+      };
+    } catch (error: any) {
+      return {
+        data: { available: false },
+        status: error.status || 500,
+        error: error.message || 'Failed to check availability',
+      };
+    }
   }
 }
 
-// Export a singleton instance
 export const bookingService = new BookingService();
-
-// Default export
 export default bookingService;
