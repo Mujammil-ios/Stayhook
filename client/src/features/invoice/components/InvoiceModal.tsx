@@ -70,7 +70,7 @@ export function InvoiceModal({ isOpen, onClose, reservation }: InvoiceModalProps
     toast({
       title: 'Invoice Confirmed',
       description: 'Invoice has been confirmed and reservation is complete.',
-      variant: 'success',
+      variant: 'default',
     });
     onClose();
   };

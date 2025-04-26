@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 
 import { useToast } from '@/hooks/use-toast';
 import { useReservation, ReservationFormData } from '../hooks/useReservation';
-import { InvoiceModal } from '../../invoice/components/InvoiceModal';
+import { InvoiceModal } from '@/features/invoice/components/InvoiceModal';
 
 // Create a schema for form validation
 const reservationSchema = z.object({
