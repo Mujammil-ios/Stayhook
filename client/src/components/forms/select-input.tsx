@@ -1,4 +1,6 @@
 import React from "react";
+import { FormField } from "./form-field";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -6,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FormField } from "./form-field";
 
 export interface SelectOption {
   value: string;
@@ -35,7 +36,7 @@ export function SelectInput({
   options,
   placeholder = "Select an option",
   required = false,
-  error,
+  error = null,
   className,
   hint,
   disabled = false,
@@ -49,12 +50,18 @@ export function SelectInput({
       className={className}
       hint={hint}
     >
-      <Select
-        value={value}
+      <Select 
+        value={value} 
         onValueChange={onChange}
         disabled={disabled}
       >
-        <SelectTrigger id={id} aria-invalid={!!error} aria-describedby={error ? `error-${id}` : undefined}>
+        <SelectTrigger
+          id={id}
+          className={cn(
+            "w-full",
+            error ? "border-destructive focus:ring-destructive" : ""
+          )}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

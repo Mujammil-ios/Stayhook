@@ -53,6 +53,10 @@ const Dashboard = () => {
               <SelectItem value="90d">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
+          <Button className="mr-2" variant="secondary" onClick={() => setIsCreatePropertyModalOpen(true)}>
+            <i className="ri-add-line mr-2"></i>
+            Create Property
+          </Button>
           <Button>
             <i className="ri-download-line mr-2"></i>
             Export
@@ -247,6 +251,12 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Create Property Modal */}
+      <CreatePropertyModal 
+        isOpen={isCreatePropertyModalOpen} 
+        onClose={() => setIsCreatePropertyModalOpen(false)} 
+      />
     </div>
   );
 };

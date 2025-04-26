@@ -1,5 +1,4 @@
 import React from "react";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 interface FormFieldProps {
@@ -21,31 +20,28 @@ export function FormField({
   children,
   hint,
 }: FormFieldProps) {
-  const id = `error-${htmlFor}`;
-  
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-between">
-        <Label htmlFor={htmlFor} className="flex items-center">
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </Label>
-      </div>
-      
-      {children}
-      
-      {hint && !error && (
-        <p className="text-sm text-neutral-500">{hint}</p>
-      )}
-      
-      {error && (
-        <p
-          id={id}
-          className="text-sm text-red-500 animate-fadeIn"
-          aria-live="polite"
+      <div className="flex justify-between">
+        <label
+          htmlFor={htmlFor}
+          className="text-sm font-medium text-neutral-900 dark:text-neutral-100"
         >
-          {error}
-        </p>
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </label>
+      </div>
+
+      {children}
+
+      {(hint || error) && (
+        <div className="mt-1">
+          {error ? (
+            <p className="text-xs text-destructive animate-shake">{error}</p>
+          ) : hint ? (
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">{hint}</p>
+          ) : null}
+        </div>
       )}
     </div>
   );
@@ -53,7 +49,7 @@ export function FormField({
 
 export function FieldGroup({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("grid gap-4 sm:grid-cols-2", className)}>
+    <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2", className)}>
       {children}
     </div>
   );

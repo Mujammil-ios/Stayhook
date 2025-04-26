@@ -1,6 +1,6 @@
 import React from "react";
-import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "./form-field";
+import { cn } from "@/lib/utils";
 
 interface TextareaInputProps {
   id: string;
@@ -25,7 +25,7 @@ export function TextareaInput({
   onChange,
   placeholder,
   required = false,
-  error,
+  error = null,
   className,
   hint,
   disabled = false,
@@ -33,6 +33,13 @@ export function TextareaInput({
   maxLength,
   onBlur,
 }: TextareaInputProps) {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const [charCount, setCharCount] = React.useState(value.length);
+
+  React.useEffect(() => {
+    setCharCount(value.length);
+  }, [value]);
+
   return (
     <FormField
       label={label}
@@ -40,26 +47,34 @@ export function TextareaInput({
       error={error}
       required={required}
       className={className}
-      hint={hint}
+      hint={
+        maxLength
+          ? `${hint ? hint + " • " : ""}${charCount}/${maxLength} characters`
+          : hint
+      }
     >
-      <Textarea
+      <textarea
+        ref={textareaRef}
         id={id}
         name={id}
         value={value}
-        onChange={onChange}
+        onChange={(e) => {
+          onChange(e);
+          setCharCount(e.target.value.length);
+        }}
         onBlur={onBlur}
+        className={cn(
+          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y",
+          "placeholder:text-muted-foreground",
+          "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          error ? "border-destructive focus:ring-destructive" : ""
+        )}
         placeholder={placeholder}
         disabled={disabled}
         rows={rows}
         maxLength={maxLength}
-        aria-invalid={!!error}
-        aria-describedby={error ? `error-${id}` : undefined}
       />
-      {maxLength && (
-        <div className="text-xs text-neutral-500 mt-1 text-right">
-          {value.length}/{maxLength}
-        </div>
-      )}
     </FormField>
   );
 }

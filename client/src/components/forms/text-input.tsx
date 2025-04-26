@@ -1,6 +1,6 @@
 import React from "react";
-import { Input } from "@/components/ui/input";
 import { FormField } from "./form-field";
+import { cn } from "@/lib/utils";
 
 interface TextInputProps {
   id: string;
@@ -27,7 +27,7 @@ export function TextInput({
   onChange,
   placeholder,
   required = false,
-  error,
+  error = null,
   className,
   type = "text",
   hint,
@@ -37,6 +37,8 @@ export function TextInput({
   onBlur,
   icon,
 }: TextInputProps) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
   return (
     <FormField
       label={label}
@@ -48,24 +50,30 @@ export function TextInput({
     >
       <div className="relative">
         {icon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <i className={`${icon} text-neutral-500`}></i>
           </div>
         )}
-        <Input
+        <input
+          ref={inputRef}
           id={id}
           name={id}
           type={type}
           value={value}
           onChange={onChange}
           onBlur={onBlur}
+          className={cn(
+            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
+            "placeholder:text-muted-foreground",
+            "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            error ? "border-destructive focus:ring-destructive" : "",
+            icon ? "pl-10" : ""
+          )}
           placeholder={placeholder}
           disabled={disabled}
           maxLength={maxLength}
           autoComplete={autoComplete}
-          aria-invalid={!!error}
-          aria-describedby={error ? `error-${id}` : undefined}
-          className={icon ? "pl-10" : ""}
         />
       </div>
     </FormField>
