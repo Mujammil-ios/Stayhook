@@ -1,0 +1,45 @@
+I need you to refactor our entire Hotel Management System front-end so that it’s fully decoupled from any backend, optimized for REST APIs, and trivial for any developer (even a beginner) to plug in new endpoints, pop-ups, screens, layouts, or messages. Do not write any backend code—focus solely on the front-end refactor. Execute all steps straight through without pausing:
+
+1. PROJECT STRUCTURE & STYLING CONVENTIONS  
+   - Restructure into feature-based folders (e.g. /features/room, /features/booking, /features/staff, /shared/components, /shared/hooks, /shared/services).  
+   - Enforce a naming convention: PascalCase for components, camelCase for hooks/services, kebab-case for filenames.  
+   - Centralize Tailwind theme tokens (colors, spacing, typography) in a single config file and reference them via custom classes (e.g. `btn-primary`, `card`, `form-field`).
+
+2. GENERIC UI COMPONENTS  
+   - Create reusable primitives in `/shared/components`: `<Button>`, `<Input>`, `<Select>`, `<Modal>`, `<Table>`, `<Notification>`, each accepting props for labels, variants, sizes, loading state, error state.  
+   - Ensure these components are fully responsive by default (using `w-full`, `max-w-*`, `flex`, `grid`).  
+   - Document their prop types with JSDoc or TypeScript interfaces, so any developer can see exactly how to use them.
+
+3. API SERVICE LAYER  
+   - In `/shared/services/api.ts`, implement a single `ApiClient` class or hook (`useApi()`) with methods `.get<T>(url)`, `.post<T>(url, body)`, etc., using Fetch or Axios.  
+   - Add global request/response interceptors for auth tokens, error handling, and JSON parsing.  
+   - Expose specific services in `/shared/services/bookingService.ts`, `roomService.ts`, etc., each exporting typed methods that call `ApiClient`.
+
+4. STATE & DATA FETCHING  
+   - Use React Query (or a small custom hook) for data caching, background refetching, and loading/error state management.  
+   - In each feature page or component, replace inline fetch logic with `const { data, error, isLoading } = useQuery(['bookings'], () => bookingService.getAll())`.  
+   - Show loading skeletons, error messages, and “no data” states by default.
+
+5. GENERIC FORM HANDLING  
+   - Build a `<Form>` wrapper component in `/shared/components/Form.tsx` using React Hook Form or Formik.  
+   - Expose `<Form.Field>` subcomponents for `<Form.Input>`, `<Form.Select>`, `<Form.TextArea>`, automatically wired for validation schema (Yup or Zod).  
+   - Provide a standard validation schema directory `/shared/validation/*.schema.ts` so anyone can drop in new field rules.
+
+6. ROUTING & LAYOUTS  
+   - Centralize all routes in `/app/routes.tsx` (or Next.js pages) with a single `<AppLayout>` that renders `<Navbar>`, `<Sidebar>`, and `<Footer>`.  
+   - Ensure the layout re-renders correctly on every navigation (no stale memoization).  
+   - Provide a `<ProtectedRoute>` HOC or hook that checks auth state before rendering.
+
+7. ENVIRONMENT & CONFIG  
+   - Read API base URL, timeouts, feature flags, and theme defaults from `.env.local`.  
+   - Expose them in `/shared/config.ts` so UI code never hard-codes URLs or magic strings.
+
+8. DOCUMENTATION & DEVELOPERS GUIDE  
+   - At the root, add a `README.md` with:  
+     • Project overview and folder structure explanation  
+     • How to add a new feature module: steps to create folder, service, hooks, pages, and tests  
+     • How to plug in a new API endpoint: where to add service method, how to call it in a component  
+     • How to use shared components and validation schemas  
+   - Include code examples for each workflow.
+
+Deliver the complete refactor plan and code snippets for each part—folder tree, sample files, TypeScript interfaces, and one end-to-end example (e.g. Booking feature). Do not stop for confirmations; provide everything in one batch.
