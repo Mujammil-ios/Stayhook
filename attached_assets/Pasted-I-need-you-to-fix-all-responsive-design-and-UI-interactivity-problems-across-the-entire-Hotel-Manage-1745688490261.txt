@@ -1,0 +1,34 @@
+I need you to fix all responsive design and UI interactivity problems across the entire Hotel Management System. Please execute all steps straight through without pausing for confirmation:
+
+1. GLOBAL RESPONSIVENESS
+   - Audit every page (dashboard, settings, rooms, reservations, staff, policy pages, detail views) in mobile, tablet, and desktop breakpoints.
+   - Ensure all layouts use fluid/grid styles so components resize and reflow correctly.
+   - Fix any overflow, clipping, or misaligned elements in headers, cards, forms, tables, and modals.
+
+2. SIDEBAR AND NAVIGATION
+   - Make the responsive sidebar toggle button work on all screen sizes.
+   - Ensure the sidebar expands/collapses smoothly and all links are clickable in collapsed and expanded states.
+   - Fix any z-index, padding, or overflow issues that prevent sidebar items from being tapped on touch devices.
+
+3. DARK/LIGHT MODE TOGGLE
+   - Restore the dark mode/light mode toggle functionality.
+   - Ensure the toggle button responds to clicks or taps in all viewports.
+   - Persist the user’s theme choice in localStorage and apply it on page load.
+   - Fix any CSS variables or theme context issues causing inconsistent styling.
+
+4. BUTTONS, LINKS, AND CLICK HANDLERS
+   - Verify every interactive element (buttons, links, cards, icons) has an onClick or onPress handler and proper hover/focus states.
+   - Fix any missing cursor pointers, tabindex issues, or event propagation problems.
+   - Add visual feedback (ripple, highlight, or opacity change) on button presses and link taps.
+
+5. UI GLITCHES AND VISUAL CONSISTENCY
+   - Standardize spacing, font sizes, and colors across all components using your design tokens or Tailwind classes.
+   - Fix any duplicated IDs, misnamed classes, or leftover debug styling.
+   - Ensure modals and dropdowns center correctly and scroll within the viewport if content is long.
+
+6. TEST AND VALIDATE
+   - Test on three breakpoints: 375×667 (mobile), 768×1024 (tablet), 1440×900 (desktop).
+   - Log any remaining issues to console with clear labels (e.g. “RESPONSIVE BUG: …”).
+   - After finishing all fixes, provide a summary of changes and confirm that all pages are now fully responsive and interactive.
+
+Use the existing component structure and styling conventions. Do not introduce new external libraries. Deliver the complete code for each fix in one pass—no mid-process confirmations.
