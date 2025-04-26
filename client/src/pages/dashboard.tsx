@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { 
   dashboardStats, 
   roomDistribution, 
@@ -144,8 +145,11 @@ const Dashboard = () => {
                 ))}
               </div>
               <div className="mt-6">
-                <Button variant="default" size="sm">
-                  View All Room Types
+                <Button variant="default" size="sm" asChild>
+                  <Link href="/room-types" className="flex items-center">
+                    <span>View All Room Types</span>
+                    <i className="ri-arrow-right-line ml-2"></i>
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -160,7 +164,10 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Recent Bookings</h3>
-              <a href="#" className="text-sm font-medium text-primary hover:text-primary-600">View all</a>
+              <Link href="/recent-bookings" className="text-sm font-medium text-primary hover:text-primary-600 flex items-center">
+                <span>View all</span>
+                <i className="ri-arrow-right-s-line ml-1"></i>
+              </Link>
             </div>
             <div className="mt-4 flow-root">
               <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

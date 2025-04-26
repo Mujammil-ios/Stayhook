@@ -76,6 +76,10 @@ function Routes() {
         <Route path="/settings" component={Settings} />
         <Route path="/help" component={Help} />
         <Route path="/forms-demo" component={FormsDemo} />
+        <Route path="/privacy-policy" component={() => import("@/pages/privacy-policy").then(module => <module.default />)} />
+        <Route path="/terms-and-conditions" component={() => import("@/pages/terms-and-conditions").then(module => <module.default />)} />
+        <Route path="/room-types" component={() => import("@/pages/room-types").then(module => <module.default />)} />
+        <Route path="/recent-bookings" component={() => import("@/pages/recent-bookings").then(module => <module.default />)} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
