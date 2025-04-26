@@ -1,269 +1,234 @@
 /**
  * Room Service
  * 
- * Service for managing hotel rooms.
+ * Service for room-related API operations.
  */
 
-import { ApiResponse } from './api';
-import apiClient from './api';
-import { Room, InsertRoom } from '@shared/schema';
+import type { ApiResponse } from './api';
+import { apiRequest } from './api';
+import type { Room, InsertRoom } from '@/shared/schema';
 
 // API endpoints for rooms
 const ENDPOINTS = {
-  ALL: '/rooms',
-  DETAIL: (id: number) => `/rooms/${id}`,
-  BY_STATUS: (status: string) => `/rooms/status/${status}`,
-  BY_CATEGORY: (category: string) => `/rooms/category/${category}`,
-  BY_PROPERTY: (propertyId: number) => `/rooms/property/${propertyId}`,
-  TYPES: '/rooms/types',
-  AMENITIES: '/rooms/amenities',
-  AVAILABILITY: '/rooms/availability',
-  MAINTENANCE: (id: number) => `/rooms/${id}/maintenance`,
-  PHOTOS: (id: number) => `/rooms/${id}/photos`,
+  BASE: '/api/rooms',
+  DETAIL: (id: number | string) => `/api/rooms/${id}`,
+  AVAILABILITY: '/api/rooms/availability',
+  CATEGORIES: '/api/rooms/categories',
+  TYPES: '/api/rooms/types',
+  STATUS: '/api/rooms/status',
 };
 
+/**
+ * Room Service class for handling room-related API operations
+ */
 class RoomService {
   /**
    * Get all rooms
    */
   async getAll(): Promise<ApiResponse<Room[]>> {
-    try {
-      const response = await apiClient.get<Room[]>(ENDPOINTS.ALL);
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: [],
-        status: error.status || 500,
-        error: error.message || 'Failed to fetch rooms',
-      };
-    }
+    // For now, this returns mock data since the API is not implemented
+    return {
+      success: true,
+      data: [
+        {
+          id: 1,
+          number: '101',
+          name: 'Deluxe Room',
+          floor: 1,
+          status: 'available',
+          roomType: 'deluxe',
+          capacity: 2,
+          pricePerNight: 150,
+          description: 'A spacious deluxe room with a king-sized bed and city view.',
+          amenities: ['wifi', 'tv', 'minibar', 'air_conditioning'],
+          images: ['room-101.jpg'],
+          propertyId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 2,
+          number: '102',
+          name: 'Standard Room',
+          floor: 1,
+          status: 'occupied',
+          roomType: 'standard',
+          capacity: 2,
+          pricePerNight: 100,
+          description: 'A comfortable standard room with twin beds.',
+          amenities: ['wifi', 'tv', 'air_conditioning'],
+          images: ['room-102.jpg'],
+          propertyId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 3,
+          number: '201',
+          name: 'Suite',
+          floor: 2,
+          status: 'available',
+          roomType: 'suite',
+          capacity: 4,
+          pricePerNight: 250,
+          description: 'A luxurious suite with separate living area and panoramic views.',
+          amenities: ['wifi', 'tv', 'minibar', 'air_conditioning', 'balcony', 'jacuzzi'],
+          images: ['room-201.jpg'],
+          propertyId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]
+    };
+    
+    // Real implementation would be:
+    // return await apiRequest<Room[]>({
+    //   url: ENDPOINTS.BASE,
+    //   method: 'GET',
+    // });
   }
 
   /**
    * Get a room by ID
    */
   async getById(id: number): Promise<ApiResponse<Room>> {
-    try {
-      const response = await apiClient.get<Room>(ENDPOINTS.DETAIL(id));
+    // Mock implementation
+    const allRooms = await this.getAll();
+    const room = allRooms.data?.find(r => r.id === id);
+    
+    if (room) {
       return {
-        ...response,
         success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: {} as Room,
-        status: error.status || 500,
-        error: error.message || 'Failed to fetch room',
+        data: room
       };
     }
-  }
-
-  /**
-   * Get rooms by status
-   */
-  async getByStatus(status: string): Promise<ApiResponse<Room[]>> {
-    try {
-      const response = await apiClient.get<Room[]>(ENDPOINTS.BY_STATUS(status));
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: [],
-        status: error.status || 500,
-        error: error.message || 'Failed to fetch rooms by status',
-      };
-    }
-  }
-
-  /**
-   * Get rooms by category
-   */
-  async getByCategory(category: string): Promise<ApiResponse<Room[]>> {
-    try {
-      const response = await apiClient.get<Room[]>(ENDPOINTS.BY_CATEGORY(category));
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: [],
-        status: error.status || 500,
-        error: error.message || 'Failed to fetch rooms by category',
-      };
-    }
-  }
-
-  /**
-   * Get rooms by property ID
-   */
-  async getByProperty(propertyId: number): Promise<ApiResponse<Room[]>> {
-    try {
-      const response = await apiClient.get<Room[]>(ENDPOINTS.BY_PROPERTY(propertyId));
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: [],
-        status: error.status || 500,
-        error: error.message || 'Failed to fetch property rooms',
-      };
-    }
-  }
-
-  /**
-   * Get all room types
-   */
-  async getRoomTypes(): Promise<ApiResponse<any>> {
-    try {
-      const response = await apiClient.get(ENDPOINTS.TYPES);
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: [],
-        status: error.status || 500,
-        error: error.message || 'Failed to fetch room types',
-      };
-    }
-  }
-
-  /**
-   * Get all available amenities
-   */
-  async getAmenities(): Promise<ApiResponse<string[]>> {
-    try {
-      const response = await apiClient.get<string[]>(ENDPOINTS.AMENITIES);
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: [],
-        status: error.status || 500,
-        error: error.message || 'Failed to fetch amenities',
-      };
-    }
+    
+    return {
+      success: false,
+      message: 'Room not found'
+    };
+    
+    // Real implementation would be:
+    // return await apiRequest<Room>({
+    //   url: ENDPOINTS.DETAIL(id),
+    //   method: 'GET',
+    // });
   }
 
   /**
    * Create a new room
    */
-  async create(data: InsertRoom): Promise<ApiResponse<Room>> {
-    try {
-      const response = await apiClient.post<Room>(ENDPOINTS.ALL, data);
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: {} as Room,
-        status: error.status || 500,
-        error: error.message || 'Failed to create room',
-      };
-    }
+  async create(room: InsertRoom): Promise<ApiResponse<Room>> {
+    // Real implementation would be:
+    return await apiRequest<Room>({
+      url: ENDPOINTS.BASE,
+      method: 'POST',
+      data: room,
+    });
   }
 
   /**
    * Update a room
    */
-  async update(id: number, data: Partial<Room>): Promise<ApiResponse<Room>> {
-    try {
-      const response = await apiClient.patch<Room>(ENDPOINTS.DETAIL(id), data);
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: {} as Room,
-        status: error.status || 500,
-        error: error.message || 'Failed to update room',
-      };
-    }
+  async update(id: number, room: Partial<Room>): Promise<ApiResponse<Room>> {
+    // Real implementation would be:
+    return await apiRequest<Room>({
+      url: ENDPOINTS.DETAIL(id),
+      method: 'PATCH',
+      data: room,
+    });
   }
 
   /**
    * Delete a room
    */
   async delete(id: number): Promise<ApiResponse<void>> {
-    try {
-      const response = await apiClient.delete(ENDPOINTS.DETAIL(id));
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: undefined,
-        status: error.status || 500,
-        error: error.message || 'Failed to delete room',
-      };
-    }
+    // Real implementation would be:
+    return await apiRequest<void>({
+      url: ENDPOINTS.DETAIL(id),
+      method: 'DELETE',
+    });
   }
 
   /**
-   * Add maintenance record to a room
+   * Get room availability for a date range
    */
-  async addMaintenance(id: number, data: {
-    date: Date;
-    type: string;
-    description: string;
-    cost?: number;
-    status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
-  }): Promise<ApiResponse<any>> {
-    try {
-      const response = await apiClient.post(ENDPOINTS.MAINTENANCE(id), data);
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: {},
-        status: error.status || 500,
-        error: error.message || 'Failed to add maintenance record',
-      };
+  async getAvailability(
+    startDate: Date,
+    endDate: Date,
+    capacity?: number,
+    roomType?: string
+  ): Promise<ApiResponse<Room[]>> {
+    // Convert dates to ISO strings
+    const startDateString = startDate.toISOString();
+    const endDateString = endDate.toISOString();
+    
+    // Build params object
+    const params: Record<string, string> = {
+      startDate: startDateString,
+      endDate: endDateString,
+    };
+    
+    // Add optional params if provided
+    if (capacity !== undefined) {
+      params.capacity = capacity.toString();
     }
+    
+    if (roomType) {
+      params.roomType = roomType;
+    }
+    
+    // Mock implementation for now
+    const allRooms = await this.getAll();
+    const availableRooms = allRooms.data?.filter(room => room.status === 'available') || [];
+    
+    return {
+      success: true,
+      data: availableRooms
+    };
+    
+    // Real implementation would be:
+    // return await apiRequest<Room[]>({
+    //   url: ENDPOINTS.AVAILABILITY,
+    //   method: 'GET',
+    //   params,
+    // });
   }
 
   /**
-   * Upload room photos
+   * Get all room types
    */
-  async uploadPhotos(id: number, photos: File[]): Promise<ApiResponse<string[]>> {
-    try {
-      const formData = new FormData();
-      
-      photos.forEach(photo => {
-        formData.append('photos', photo);
-      });
-      
-      const response = await apiClient.upload<string[]>(ENDPOINTS.PHOTOS(id), formData);
-      
-      return {
-        ...response,
-        success: true,
-      };
-    } catch (error: any) {
-      return {
-        data: [],
-        status: error.status || 500,
-        error: error.message || 'Failed to upload photos',
-      };
-    }
+  async getRoomTypes(): Promise<ApiResponse<string[]>> {
+    // Mock implementation
+    return {
+      success: true,
+      data: ['standard', 'deluxe', 'suite', 'family', 'presidential']
+    };
+    
+    // Real implementation would be:
+    // return await apiRequest<string[]>({
+    //   url: ENDPOINTS.TYPES,
+    //   method: 'GET',
+    // });
+  }
+
+  /**
+   * Get all room statuses
+   */
+  async getRoomStatuses(): Promise<ApiResponse<string[]>> {
+    // Mock implementation
+    return {
+      success: true,
+      data: ['available', 'occupied', 'maintenance', 'cleaning', 'reserved']
+    };
+    
+    // Real implementation would be:
+    // return await apiRequest<string[]>({
+    //   url: ENDPOINTS.STATUS,
+    //   method: 'GET',
+    // });
   }
 }
 
+// Export a singleton instance
 export const roomService = new RoomService();
-export default roomService;

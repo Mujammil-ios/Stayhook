@@ -22,38 +22,87 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
   const { signup, login } = useAuth();
   const [_, setLocation] = useLocation();
 
-  const handleLoginSubmit = (data: LoginFormData) => {
+  const handleLoginSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     
-    // Simulate API call
-    console.log('Login form submitted with data:', data);
-    
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      console.log('Login form submitted with data:', data);
+      
+      // Use actual auth context to login
+      const result = await login(data.username, data.password);
+      
+      if (result.success) {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+          variant: "default",
+        });
+        onClose();
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to login",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
       toast({
-        title: "Login successful",
-        description: "Welcome back!",
-        variant: "default",
+        title: "Error",
+        description: "An unexpected error occurred during login",
+        variant: "destructive",
       });
-      onClose();
-    }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSignupSubmit = (data: SignupFormData) => {
+  const handleSignupSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
     
-    // Simulate API call
-    console.log('Signup form submitted with data:', data);
-    
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      console.log('Signup form submitted with data:', data);
+      
+      // Use actual auth context to sign up
+      const result = await signup(data.name, data.email, data.password);
+      
+      if (result.success) {
+        toast({
+          title: "Account created successfully",
+          description: "Welcome to the Hotel Management System!",
+          variant: "default",
+        });
+        
+        // Start onboarding process
+        try {
+          console.log('Starting onboarding from modal...');
+          const onboardingResult = await onboardingService.startOnboarding();
+          if (onboardingResult.success) {
+            // Navigate to onboarding page and close modal
+            setLocation('/onboarding');
+          }
+        } catch (onboardingError) {
+          console.error('Error starting onboarding:', onboardingError);
+        }
+        
+        onClose();
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to create account",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
       toast({
-        title: "Account created successfully",
-        description: "Welcome to the Hotel Management System!",
-        variant: "default",
+        title: "Error",
+        description: "An unexpected error occurred during signup",
+        variant: "destructive",
       });
-      onClose();
-    }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const switchMode = () => {

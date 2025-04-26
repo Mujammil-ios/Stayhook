@@ -14,7 +14,7 @@ interface ApiOptions {
   headers?: HeadersInit;
 }
 
-interface ApiResponse<T = any> {
+export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   message?: string;
@@ -22,7 +22,7 @@ interface ApiResponse<T = any> {
 }
 
 // Function to handle API requests
-export const apiRequest = async <T>({
+const apiRequest = async <T>({
   url,
   method,
   data,
@@ -90,3 +90,10 @@ export const apiRequest = async <T>({
     };
   }
 };
+
+// Re-export the apiRequest function
+export { apiRequest };
+
+// Also create and export an API object with the apiRequest method
+const api = { request: apiRequest };
+export default api;
