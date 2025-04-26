@@ -24,7 +24,7 @@ export function RoomModal({
     setIsLoading(true);
     
     // Simulate API call
-    console.log(`${isEditing ? 'Updating' : 'Creating'} room with data:`, data);
+    console.log('Room form submitted with data:', data);
     
     setTimeout(() => {
       setIsLoading(false);
@@ -32,10 +32,8 @@ export function RoomModal({
       
       // Show success toast
       toast({
-        title: isEditing ? "Room updated" : "Room created",
-        description: isEditing 
-          ? `Room ${data.roomNumber} has been updated successfully.` 
-          : `Room ${data.roomNumber} has been added successfully.`,
+        title: isEditing ? "Room updated" : "Room added",
+        description: `Room ${data.roomNumber} has been ${isEditing ? 'updated' : 'added'} successfully.`,
         variant: "default",
       });
       
@@ -54,12 +52,12 @@ export function RoomModal({
         <i className="ri-check-line text-3xl text-green-600 dark:text-green-400"></i>
       </div>
       <h3 className="text-xl font-medium mb-2">
-        {isEditing ? "Room Updated Successfully!" : "Room Created Successfully!"}
+        {isEditing ? 'Room Updated Successfully!' : 'Room Added Successfully!'}
       </h3>
       <p className="text-neutral-500 mb-4">
         {isEditing 
-          ? "The room information has been updated in the system." 
-          : "The new room has been added to your inventory."}
+          ? 'The room information has been updated in the system.' 
+          : 'The new room has been added to your inventory.'}
       </p>
     </div>
   );
@@ -68,10 +66,7 @@ export function RoomModal({
     <Modal
       isOpen={isOpen}
       onClose={success ? () => {} : onClose}
-      title={success 
-        ? "Success" 
-        : isEditing ? "Edit Room" : "Add New Room"
-      }
+      title={success ? "Success" : isEditing ? "Edit Room" : "Add New Room"}
       size="lg"
       closeOnClickOutside={!isLoading && !success}
     >
@@ -83,7 +78,6 @@ export function RoomModal({
           onCancel={onClose}
           initialData={initialData}
           isLoading={isLoading}
-          isEditing={isEditing}
         />
       )}
     </Modal>

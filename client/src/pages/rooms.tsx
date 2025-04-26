@@ -13,11 +13,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { RoomModal } from "@/components/forms/room/RoomModal";
 
 const Rooms = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [floorFilter, setFloorFilter] = useState<string>("all");
+  const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -63,7 +67,7 @@ const Rooms = () => {
       <div className="mb-6 sm:flex sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Room Management</h1>
         <div className="mt-3 sm:mt-0">
-          <Button>
+          <Button onClick={() => setIsRoomModalOpen(true)}>
             <i className="ri-add-line mr-2"></i>
             Add New Room
           </Button>

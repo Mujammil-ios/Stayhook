@@ -1,0 +1,44 @@
+
+2. INTEGRATE EACH FORM INTO ITS CORRESPONDING FEATURE SECTION
+   A. Room Management Form
+      - Add an “Add New Room” button in the Room Management section.
+      - On click, open a modal containing fields: room number, type, floor, capacity, pricing, amenities.
+      - On submit, log the form values to the console and display a success toast.
+
+   B. Guest/Customer Form
+      - Add an “Add New Guest” button in the Reservations/Guests section.
+      - On click, open a modal with fields: name, ID proof upload, mobile, vehicle, check-in/check-out dates.
+      - On submit, console.log the values and show a success message.
+
+   C. Booking Form
+      - Add a “New Booking” button in the Bookings section.
+      - On click, open a modal with fields: guest selector, room selector, dates, pricing details.
+      - On submit, log values and show success feedback.
+
+   D. Staff Form
+      - Add an “Add Staff” button in the Staff Management section.
+      - On click, open a modal with fields: name, employee ID, role, salary, joining date.
+      - On submit, console.log inputs and show confirmation toast.
+
+3. CREATE NEW PAGES AND NAVIGATION
+   A. Policy Pages
+      - Privacy Policy: full standard text.
+      - Terms & Conditions: full standard text.
+      - Customer Support: contact form (name, email, message) and an FAQ section.
+      - Add links to these pages in the footer and in the settings menu.
+
+   B. Detail-View Pages
+      - All Room Types: list with filters by type, price range.
+      - All Notifications: full notification list with filters (unread/read).
+      - All Recent Bookings: full bookings list with search by guest or date.
+      - In the dashboard, add “View All” buttons that link to these pages.
+
+4. IMPLEMENTATION REQUIREMENTS
+   - Use existing project structure and styling conventions (Tailwind, component patterns).
+   - Reuse shared UI components; ensure responsive design.
+   - Apply the same validation logic across all forms.
+   - Add console logging for every form submission with clear labels.
+   - Show loading, success, and error states for all user actions.
+   - Ensure keyboard accessibility and proper focus management.
+
+Provide the complete implementation code for each component/page, in sequence: first fix the Badge import, then integrate the forms, and finally create and wire up the new pages. Do not pause or await confirmation part-way through—just deliver the full set of changes in one go

@@ -1,96 +1,84 @@
 import React, { useState, useEffect } from "react";
 import { TextInput } from "../text-input";
 import { SelectInput, SelectOption } from "../select-input";
-import { CheckboxInput } from "../checkbox-input";
 import { MultiCheckbox, CheckboxOption } from "../multi-checkbox";
-import { FileUpload } from "../file-upload";
 import { Button } from "@/components/ui/button";
-import { Validators, validateForm, getFieldError, ValidationErrors } from "@/lib/validators";
 import { FieldGroup } from "../form-field";
+import { Validators, validateForm, getFieldError, ValidationErrors } from "@/lib/validators";
 
-// Define room categories
-const roomCategoryOptions: SelectOption[] = [
+// Room category options
+const categoryOptions: SelectOption[] = [
   { value: "standard", label: "Standard" },
   { value: "deluxe", label: "Deluxe" },
-  { value: "executive", label: "Executive" },
   { value: "suite", label: "Suite" },
+  { value: "executive", label: "Executive" },
   { value: "presidential", label: "Presidential Suite" },
 ];
 
-// Define room status options
-const roomStatusOptions: SelectOption[] = [
+// Room status options
+const statusOptions: SelectOption[] = [
   { value: "available", label: "Available" },
   { value: "occupied", label: "Occupied" },
-  { value: "maintenance", label: "Maintenance" },
-  { value: "cleaning", label: "Cleaning" },
+  { value: "maintenance", label: "Under Maintenance" },
+  { value: "reserved", label: "Reserved" },
 ];
 
-// Define amenities options
+// Floor options
+const floorOptions: SelectOption[] = Array.from({ length: 10 }, (_, i) => ({
+  value: String(i + 1),
+  label: `Floor ${i + 1}`,
+}));
+
+// Amenities options
 const amenitiesOptions: CheckboxOption[] = [
   { value: "wifi", label: "Wi-Fi" },
   { value: "ac", label: "Air Conditioning" },
   { value: "tv", label: "Television" },
-  { value: "refrigerator", label: "Refrigerator" },
-  { value: "safe", label: "In-room Safe" },
   { value: "minibar", label: "Mini Bar" },
-  { value: "desk", label: "Work Desk" },
+  { value: "safe", label: "Room Safe" },
   { value: "bathtub", label: "Bathtub" },
   { value: "shower", label: "Shower" },
+  { value: "coffeeMaker", label: "Coffee Maker" },
+  { value: "workspace", label: "Work Desk" },
   { value: "hairdryer", label: "Hair Dryer" },
-  { value: "balcony", label: "Balcony" },
-  { value: "oceanview", label: "Ocean View" },
+  { value: "breakfast", label: "Complimentary Breakfast" },
+  { value: "roomService", label: "Room Service" },
 ];
+
+export interface RoomFormData {
+  roomNumber: string;
+  category: string;
+  floor: string;
+  capacity: string;
+  baseRate: string;
+  status: string;
+  amenities: string[];
+  description: string;
+}
 
 interface RoomFormProps {
   onSubmit: (data: RoomFormData) => void;
   onCancel?: () => void;
   initialData?: Partial<RoomFormData>;
   isLoading?: boolean;
-  isEditing?: boolean;
 }
 
-export interface RoomFormData {
-  roomNumber: string;
-  roomCategory: string;
-  floorNumber: string;
-  adultsCapacity: string;
-  childrenCapacity: string;
-  basePrice: string;
-  hasSeasonalPricing: boolean;
-  seasonalPrices: {
-    summer: string;
-    winter: string;
-    holiday: string;
-  };
-  roomStatus: string;
-  amenities: string[];
-  photos: File[];
-}
-
-export function RoomForm({ 
-  onSubmit, 
-  onCancel, 
+export function RoomForm({
+  onSubmit,
+  onCancel,
   initialData,
   isLoading = false,
-  isEditing = false
 }: RoomFormProps) {
   // Form state
   const [formData, setFormData] = useState<RoomFormData>({
     roomNumber: initialData?.roomNumber || "",
-    roomCategory: initialData?.roomCategory || "",
-    floorNumber: initialData?.floorNumber || "",
-    adultsCapacity: initialData?.adultsCapacity || "2",
-    childrenCapacity: initialData?.childrenCapacity || "0",
-    basePrice: initialData?.basePrice || "",
-    hasSeasonalPricing: initialData?.hasSeasonalPricing || false,
-    seasonalPrices: initialData?.seasonalPrices || {
-      summer: "",
-      winter: "",
-      holiday: ""
-    },
-    roomStatus: initialData?.roomStatus || "available",
-    amenities: initialData?.amenities || [],
-    photos: initialData?.photos || [],
+    category: initialData?.category || "standard",
+    floor: initialData?.floor || "1",
+    capacity: initialData?.capacity || "2",
+    baseRate: initialData?.baseRate || "",
+    status: initialData?.status || "available",
+    amenities: initialData?.amenities || ["wifi", "ac", "tv"],
+    description: initialData?.description || "",
   });
 
   // Form validation
@@ -101,44 +89,18 @@ export function RoomForm({
   const validationRules = {
     roomNumber: [
       Validators.required("Room number is required"),
-      Validators.pattern(/^\d+$/, "Room number must be numeric"),
+      Validators.pattern(/^[0-9]{3,4}$/, "Room number must be 3-4 digits"),
     ],
-    roomCategory: [
-      Validators.required("Room category is required"),
+    baseRate: [
+      Validators.required("Base rate is required"),
+      Validators.pattern(/^\d+(\.\d{1,2})?$/, "Enter a valid amount (e.g., 1999.99)"),
+      Validators.min(0, "Rate cannot be negative"),
     ],
-    floorNumber: [
-      Validators.pattern(/^\d*$/, "Floor number must be numeric"),
+    capacity: [
+      Validators.required("Capacity is required"),
+      Validators.pattern(/^[1-9][0-9]*$/, "Must be a positive number"),
+      Validators.max(10, "Maximum capacity is 10"),
     ],
-    adultsCapacity: [
-      Validators.required("Adults capacity is required"),
-      Validators.pattern(/^\d+$/, "Must be a number"),
-      Validators.min(1, "Minimum capacity is 1"),
-    ],
-    childrenCapacity: [
-      Validators.pattern(/^\d*$/, "Must be a number"),
-    ],
-    basePrice: [
-      Validators.required("Base price is required"),
-      Validators.pattern(/^\d+(\.\d{1,2})?$/, "Enter a valid price (e.g., 99.99)"),
-      Validators.min(0, "Price cannot be negative"),
-    ],
-    roomStatus: [
-      Validators.required("Room status is required"),
-    ],
-    ...(formData.hasSeasonalPricing ? {
-      'seasonalPrices.summer': [
-        Validators.pattern(/^\d+(\.\d{1,2})?$/, "Enter a valid price (e.g., 99.99)"),
-        Validators.min(0, "Price cannot be negative"),
-      ],
-      'seasonalPrices.winter': [
-        Validators.pattern(/^\d+(\.\d{1,2})?$/, "Enter a valid price (e.g., 99.99)"),
-        Validators.min(0, "Price cannot be negative"),
-      ],
-      'seasonalPrices.holiday': [
-        Validators.pattern(/^\d+(\.\d{1,2})?$/, "Enter a valid price (e.g., 99.99)"),
-        Validators.min(0, "Price cannot be negative"),
-      ],
-    } : {}),
   };
 
   // Validate on change
@@ -154,24 +116,12 @@ export function RoomForm({
     });
     
     setErrors(filteredErrors);
-  }, [formData, touched, validationRules]);
+  }, [formData, touched]);
 
   // Handle change for text inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof RoomFormData],
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   // Handle change for select inputs
@@ -179,19 +129,9 @@ export function RoomForm({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle change for checkbox inputs
-  const handleCheckboxChange = (name: string, checked: boolean) => {
-    setFormData(prev => ({ ...prev, [name]: checked }));
-  };
-
   // Handle change for multi checkbox
   const handleMultiCheckboxChange = (selectedValues: string[]) => {
     setFormData(prev => ({ ...prev, amenities: selectedValues }));
-  };
-
-  // Handle file upload
-  const handleFileUpload = (files: File[]) => {
-    setFormData(prev => ({ ...prev, photos: files }));
   };
 
   // Mark field as touched on blur
@@ -214,8 +154,9 @@ export function RoomForm({
     const validationErrors = validateForm(formData, validationRules);
     setErrors(validationErrors);
 
-    // Submit if no errors
+    // If no errors, submit the form
     if (Object.keys(validationErrors).length === 0) {
+      console.log("Room form submitted with data:", formData);
       onSubmit(formData);
     }
   };
@@ -229,163 +170,89 @@ export function RoomForm({
           value={formData.roomNumber}
           onChange={handleChange}
           onBlur={() => handleBlur("roomNumber")}
-          placeholder="Enter room number"
+          placeholder="e.g., 101"
           required
           error={getFieldError("roomNumber", errors)}
-          icon="ri-door-line"
+          icon="ri-hotel-line"
         />
 
         <SelectInput
-          id="roomCategory"
+          id="category"
           label="Room Category"
-          value={formData.roomCategory}
-          onChange={(value) => {
-            handleSelectChange("roomCategory", value);
-            handleBlur("roomCategory");
-          }}
-          options={roomCategoryOptions}
-          placeholder="Select room category"
+          value={formData.category}
+          onChange={(value) => handleSelectChange("category", value)}
+          options={categoryOptions}
           required
-          error={getFieldError("roomCategory", errors)}
         />
       </FieldGroup>
 
       <FieldGroup>
-        <TextInput
-          id="floorNumber"
-          label="Floor Number"
-          value={formData.floorNumber}
-          onChange={handleChange}
-          onBlur={() => handleBlur("floorNumber")}
-          placeholder="Enter floor number"
-          error={getFieldError("floorNumber", errors)}
-          icon="ri-building-line"
-        />
-
         <SelectInput
-          id="roomStatus"
-          label="Room Status"
-          value={formData.roomStatus}
-          onChange={(value) => {
-            handleSelectChange("roomStatus", value);
-            handleBlur("roomStatus");
-          }}
-          options={roomStatusOptions}
-          placeholder="Select room status"
+          id="floor"
+          label="Floor"
+          value={formData.floor}
+          onChange={(value) => handleSelectChange("floor", value)}
+          options={floorOptions}
           required
-          error={getFieldError("roomStatus", errors)}
         />
-      </FieldGroup>
 
-      <FieldGroup>
         <TextInput
-          id="adultsCapacity"
-          label="Adults Capacity"
-          value={formData.adultsCapacity}
+          id="capacity"
+          label="Capacity"
+          value={formData.capacity}
           onChange={handleChange}
-          onBlur={() => handleBlur("adultsCapacity")}
-          placeholder="Number of adults"
+          onBlur={() => handleBlur("capacity")}
+          placeholder="Max number of guests"
           required
-          error={getFieldError("adultsCapacity", errors)}
+          error={getFieldError("capacity", errors)}
+          type="number"
           icon="ri-user-line"
-          type="number"
-        />
-
-        <TextInput
-          id="childrenCapacity"
-          label="Children Capacity"
-          value={formData.childrenCapacity}
-          onChange={handleChange}
-          onBlur={() => handleBlur("childrenCapacity")}
-          placeholder="Number of children"
-          error={getFieldError("childrenCapacity", errors)}
-          icon="ri-user-smile-line"
-          type="number"
         />
       </FieldGroup>
 
       <FieldGroup>
         <TextInput
-          id="basePrice"
-          label="Base Price"
-          value={formData.basePrice}
+          id="baseRate"
+          label="Base Rate (per night)"
+          value={formData.baseRate}
           onChange={handleChange}
-          onBlur={() => handleBlur("basePrice")}
-          placeholder="Enter base price"
+          onBlur={() => handleBlur("baseRate")}
+          placeholder="e.g., 2999"
           required
-          error={getFieldError("basePrice", errors)}
+          error={getFieldError("baseRate", errors)}
+          type="text"
           icon="ri-money-dollar-circle-line"
         />
 
-        <div className="self-end">
-          <CheckboxInput
-            id="hasSeasonalPricing"
-            label="Enable seasonal pricing"
-            checked={formData.hasSeasonalPricing}
-            onChange={(checked) => handleCheckboxChange("hasSeasonalPricing", checked)}
-          />
-        </div>
+        <SelectInput
+          id="status"
+          label="Room Status"
+          value={formData.status}
+          onChange={(value) => handleSelectChange("status", value)}
+          options={statusOptions}
+          required
+        />
       </FieldGroup>
 
-      {formData.hasSeasonalPricing && (
-        <div className="rounded-md border border-neutral-200 dark:border-neutral-700 p-4 bg-neutral-50 dark:bg-neutral-800/50 animate-fadeIn">
-          <h3 className="text-sm font-medium mb-3">Seasonal Pricing</h3>
-          <FieldGroup>
-            <TextInput
-              id="seasonalPrices.summer"
-              label="Summer Price"
-              value={formData.seasonalPrices.summer}
-              onChange={handleChange}
-              onBlur={() => handleBlur("seasonalPrices.summer")}
-              placeholder="Summer rate"
-              error={getFieldError("seasonalPrices.summer", errors)}
-              icon="ri-sun-line"
-            />
-
-            <TextInput
-              id="seasonalPrices.winter"
-              label="Winter Price"
-              value={formData.seasonalPrices.winter}
-              onChange={handleChange}
-              onBlur={() => handleBlur("seasonalPrices.winter")}
-              placeholder="Winter rate"
-              error={getFieldError("seasonalPrices.winter", errors)}
-              icon="ri-snowy-line"
-            />
-
-            <TextInput
-              id="seasonalPrices.holiday"
-              label="Holiday Price"
-              value={formData.seasonalPrices.holiday}
-              onChange={handleChange}
-              onBlur={() => handleBlur("seasonalPrices.holiday")}
-              placeholder="Holiday rate"
-              error={getFieldError("seasonalPrices.holiday", errors)}
-              icon="ri-calendar-event-line"
-            />
-          </FieldGroup>
-        </div>
-      )}
-
-      <MultiCheckbox
-        id="amenities"
-        label="Room Amenities"
-        options={amenitiesOptions}
-        selectedValues={formData.amenities}
-        onChange={handleMultiCheckboxChange}
-        columns={2}
-        hint="Select all amenities available in this room"
+      <TextInput
+        id="description"
+        label="Room Description"
+        value={formData.description}
+        onChange={handleChange}
+        placeholder="Enter room description"
+        icon="ri-file-text-line"
       />
 
-      <FileUpload
-        id="photos"
-        label="Room Photos"
-        value={formData.photos}
-        onChange={handleFileUpload}
-        maxFiles={20}
-        accept="image/*"
-        hint="Upload up to 20 photos of the room"
-      />
+      <div className="space-y-2">
+        <MultiCheckbox
+          id="amenities"
+          label="Room Amenities"
+          options={amenitiesOptions}
+          selectedValues={formData.amenities}
+          onChange={handleMultiCheckboxChange}
+          columns={3}
+        />
+      </div>
 
       <div className="flex justify-end space-x-3">
         {onCancel && (
@@ -402,10 +269,10 @@ export function RoomForm({
           {isLoading ? (
             <>
               <i className="ri-loader-4-line animate-spin mr-2"></i>
-              {isEditing ? "Updating..." : "Creating..."}
+              Saving...
             </>
           ) : (
-            isEditing ? "Update Room" : "Create Room"
+            "Save Room"
           )}
         </Button>
       </div>
