@@ -20,6 +20,7 @@ import Onboarding from "@/pages/onboarding";
 import { ThemeProvider } from "@/hooks/useThemeContext";
 import { AuthProvider, useAuth } from "@/hooks/useAuthContext";
 import { OnboardingProvider } from "@/features/onboarding/hooks/useOnboarding";
+import CreateReservation from "@/features/reservation/components/CreateReservation";
 
 // Import auth pages
 import Login from "@/pages/auth/login";
@@ -28,15 +29,15 @@ import ForgotPassword from "@/pages/auth/forgot-password";
 
 // Lazy loaded components
 const PrivacyPolicy = React.lazy(() => import("@/pages/privacy-policy"));
-const TermsAndConditions = React.lazy(() => import("@/pages/terms-and-conditions"));
+const TermsAndConditions = React.lazy(
+  () => import("@/pages/terms-and-conditions"),
+);
 const RoomTypes = React.lazy(() => import("@/pages/room-types"));
 const RecentBookings = React.lazy(() => import("@/pages/recent-bookings"));
 const CustomerSupport = React.lazy(() => import("@/pages/customer-support"));
 
 function Router() {
-  return (
-    <Routes />
-  );
+  return <Routes />;
 }
 
 // Loading indicator component
@@ -52,13 +53,13 @@ const LoadingIndicator = () => (
 function Routes() {
   const { isAuthenticated, isLoading } = useAuth();
   const [location] = useLocation();
-  
+
   // Reset scroll position on route change
   useEffect(() => {
     window.scrollTo(0, 0);
     console.log(`[Router] Route changed to: ${location}`);
   }, [location]);
-  
+
   // Show loading spinner while checking auth
   if (isLoading) {
     return (
@@ -70,9 +71,9 @@ function Routes() {
       </div>
     );
   }
-  
+
   // If not authenticated, show auth pages
-  if (!isAuthenticated) {
+  if (!isAuthenticated && location !== "/onboarding") {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
         <Switch>
@@ -86,19 +87,19 @@ function Routes() {
       </div>
     );
   }
-  
+
   // If authenticated, show main app
   // Note: Key prop forces Layout to re-render when location changes
-  
+
   // Handle the onboarding page separately - it should not use the regular Layout
-  if (location === '/onboarding') {
+  if (location === "/onboarding") {
     return (
       <Suspense fallback={<LoadingIndicator />}>
         <Onboarding />
       </Suspense>
     );
   }
-  
+
   return (
     <Layout key={location}>
       <Suspense fallback={<LoadingIndicator />}>
@@ -136,18 +137,18 @@ function App() {
 
   // Get default theme preference from localStorage or system
   const getSavedTheme = () => {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
-        return savedTheme as 'light' | 'dark' | 'system';
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
+        return savedTheme as "light" | "dark" | "system";
       }
     }
-    return 'system';
+    return "system";
   };
 
   return (
     <ThemeProvider defaultTheme={getSavedTheme()}>
-      <div className={mounted ? '' : 'invisible'}>
+      <div className={mounted ? "" : "invisible"}>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
             <OnboardingProvider>

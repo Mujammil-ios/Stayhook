@@ -13,6 +13,7 @@ export * from './api';
 export * from './roomService';
 export * from './guestService';
 export * from './reservationService';
+export * from './invoiceService';
 // export * from './staffService';
 // export * from './analyticsService';
 export * from './onboardingService';

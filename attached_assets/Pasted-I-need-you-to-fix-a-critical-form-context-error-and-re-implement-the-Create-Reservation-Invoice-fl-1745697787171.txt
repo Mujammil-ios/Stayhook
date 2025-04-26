@@ -1,0 +1,49 @@
+I need you to fix a critical form context error and re-implement the Create Reservation & Invoice flow in our existing Hotel Management System—apply all changes directly to the current codebase in one pass, without pausing for confirmations:
+
+1. FIX `useFormContext()` NULL ERROR  
+   - Error:  
+     ```
+     Cannot destructure property 'getFieldState' of 'useFormContext(...)' as it is null
+     ```  
+   - In `components/ui/form.tsx`, ensure every use of `useFormField`, `useFormItem`, etc., is wrapped in a proper `<FormProvider>` from React Hook Form.  
+   - Update all form consumers (OnboardingWizard, CreateReservation form) to be children of:  
+     ```jsx
+     const methods = useForm({...});
+     return (
+       <FormProvider {...methods}>
+         {/* form fields here */}
+       </FormProvider>
+     );
+     ```  
+   - Add a fallback in `useFormField` to throw a descriptive error if `useFormContext()` returns null.
+
+2. RE-IMPLEMENT CREATE RESERVATION & INVOICE FLOW  
+   - Under `/features/reservation`, build a single **CreateReservation** modal or page that uses `<FormProvider>` and lists **all** fields at once:  
+     - Customer Name  
+     - Aadhar No. (with image upload)  
+     - Mobile No.  
+     - Vehicle No.  
+     - Check-in Date & Check-out Date  
+     - Travelling From & To  
+     - Gender & Age counts (Male, Female, Child)  
+     - Live Customer Photo (optional)  
+     - Contact & Address  
+     - Nationality  
+     - Ability to add up to 3 guests per reservation  
+   - On submit:  
+     1. Call `reservationService.createReservation(data)`  
+     2. When it resolves, automatically open or navigate to an **Invoice** modal/page under `/features/invoice`:  
+        - Invoice form fields: Booking ID; Customer details; Room details; Dates; Rates; Taxes; Discounts; Total; Payment Status  
+        - Display a responsive invoice preview styled for print  
+        - Include a “Download PDF” button that calls `invoiceService.generateInvoice(bookingId)` and downloads the result  
+   - Ensure both forms use React Hook Form’s context (`useForm`, `FormProvider`, `FormField`) and Tailwind responsive classes.
+
+3. IMPLEMENTATION REQUIREMENTS  
+   - Work entirely within the existing codebase—do **not** scaffold a new project.  
+   - Follow current naming conventions, folder structure, and component patterns.  
+   - Maintain full responsiveness at mobile/tablet/desktop breakpoints and include loading/error states for all async operations.  
+   - Provide the complete updated code for:  
+     • The fixes in `components/ui/form.tsx` and any form consumers  
+     • `/features/reservation/CreateReservation` form and service integration  
+     • `/features/invoice/InvoiceModal` or page and service integration  
+   - Deliver everything in **one** batch, ready to merge—no mid-stream confirmations.
