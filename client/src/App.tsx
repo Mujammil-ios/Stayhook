@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -82,16 +83,36 @@ function Routes() {
 }
 
 function App() {
+  const [mounted, setMounted] = useState(false);
+
+  // Hydration fix - ensures theme is only applied after component mounts
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Get default theme preference from localStorage or system
+  const getSavedTheme = () => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+        return savedTheme as 'light' | 'dark' | 'system';
+      }
+    }
+    return 'system';
+  };
+
   return (
-    <ThemeProvider defaultTheme="system">
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </QueryClientProvider>
-      </AuthProvider>
+    <ThemeProvider defaultTheme={getSavedTheme()}>
+      <div className={mounted ? '' : 'invisible'}>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </QueryClientProvider>
+        </AuthProvider>
+      </div>
     </ThemeProvider>
   );
 }

@@ -8,13 +8,13 @@ const Footer = () => {
           &copy; {new Date().getFullYear()} HotelHub Management System. All rights reserved.
         </div>
         <div className="mt-4 md:mt-0 flex flex-wrap justify-center md:justify-end gap-3 sm:gap-4 md:gap-6">
-          <Link to="/help#privacy" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
+          <Link href="/help#privacy" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
             Privacy Policy
           </Link>
-          <Link to="/help#terms" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
+          <Link href="/help#terms" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
             Terms of Service
           </Link>
-          <Link to="/help#contact" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
+          <Link href="/help#contact" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
             Contact Support
           </Link>
         </div>
