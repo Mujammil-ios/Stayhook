@@ -1,0 +1,96 @@
+You are an expert front-end engineer and UI/UX designer specializing in modern, minimalist single-page applications for 2025. Build a sophisticated Hotel & Property Management SaaS dashboard using only HTML, CSS, and vanilla JavaScript (no back-end required). All data will come from in-memory JSON objects. Reflect 2025 design sensibilities—glassmorphism cards, subtle depth, asymmetric layouts, animated gradients, micro-interactions, dark/light theme toggle, and WCAG-AA accessibility.
+
+---  
+## Data Architecture  
+Create a `data.js` with normalized entities and relationships for:  
+- **Properties** (id, name, GST info, address, geoCoordinates, mediaGallery[], amenities[], contactInfo)  
+- **Rooms** (id, number, category, floor, capacity, amenities[], status, baseRate, seasonalRates{}, maintenanceHistory[], mediaGallery[])  
+- **Guests** (id, personalInfo{}, identificationDocs[], contactDetails{}, preferences{}, stayHistory[], loyaltyInfo{})  
+- **Reservations** (id, roomId, guestIds[], status, timeline{}, specialRequests[], paymentDetails{})  
+- **Staff** (id, personalInfo{}, employmentDetails{}, schedule[], performanceMetrics{})  
+- **Finance** (dailyMetrics{}, monthlySummaries[], yearlyReports[], expenseCategories[])  
+
+---  
+## Sections & Modules  
+Implement a side navigation with icons and expandable sections for all modules below. Each should load in the main content area via a JS router and use a virtual-DOM-like update system. Add breadcrumbs, smooth CSS transitions, skeleton loaders, and context-aware action panels.
+
+### 1. Onboarding  
+- **Login/Signup** (email + password, social auth)  
+- **Create Property Wizard** (7–9 steps):  
+  1. Basic Info: name, type, description, GST lookup/validation via API  
+  2. Address: live-location fetch, street, city, postcode, currency  
+  3. Amenities: select common amenities  
+  4. Upload Property Photos (≤20, compress)  
+  5. Bed Types & Room Count (add new bed types)  
+  6. Occupancy Limits & Extra Pricing (adult & child)  
+  7. Room-Specific Amenities  
+  8. Upload Room Photos (≤20)  
+  9. Policies: name, description, rules  
+- **Finish**: confirmation screen  
+
+### 2. Property Management  
+- **Property List**: filter/sort, single property per account  
+- **Property Profile**: detailed info, media gallery, GST API  
+- **Access Groups**: manage user roles & permissions  
+
+### 3. Live Monitor  
+- **Reservations Overview**: real-time counts (new, in-house, arrivals, departures, cancellations, no-shows, magic links)  
+- **Customer Details**: booking ID, dates, status, bed, amount, export CSV  
+- **Search & Sort**: by mobile, Aadhar, name, status  
+- **Reports**: generate & export by status  
+- **Room Availability**: daily grid view with base pricing  
+
+### 4. Reservation Management  
+- **Calendar View** (day/week/month) + list fallback  
+- **Room List**: color-coded by occupancy  
+- **Filters & Search**: date range, status, guest name  
+- **Create Reservation Form** (up to 3 occupants per room):  
+  - Name, Aadhar (image upload), mobile, vehicle, check-in/out, locations, gender & age counts, optional live photo, nationality, contact  
+  - Autofill via mobile lookup  
+  - Price auto-fetch from room but editable; apply coupons & discounts  
+
+### 5. Rates & Inventory  
+- **Rate Management**: default vs custom seasonal rates  
+- **Bulk Update**: date-range adjustments  
+
+### 6. Employee Management  
+- **Records**: ID, name, dates, designation, salary history, performance  
+- **Attendance**: leave requests, scheduling  
+
+### 7. Housekeeping  
+- **Cleaning Status**: visual status per room  
+- **Requests**: assign tasks to staff  
+
+### 8. Pricing Management  
+- Custom vs default pricing workflows  
+
+### 9. Reports & Analytics  
+- **Master Report**: high-level KPIs  
+- **Room Revenue**: per-room breakdown  
+- **Night Audit**: daily shift audit  
+- **Front Desk**: in-house, arrivals, early check-ins  
+- **Financial**: payment gateway, cash, refunds, tax, expense reports  
+
+---  
+## Interface & Design System  
+- Responsive layout with CSS Grid/Flexbox  
+- Dark/light toggle syncing to OS preference  
+- Glassmorphism cards, micro shadows, animated gradients  
+- CSS custom properties for theming and spacing (modular scale)  
+- Accessible components (focus states, ARIA roles)  
+- SVG icon system with dynamic coloring  
+- Variable fonts for responsive typography  
+- Gesture support (swipe tabs) and drag-and-drop for room assignment  
+- Real-time notifications & blink alerts for upcoming check-outs  
+
+---  
+## JavaScript Architecture  
+- ES6 modules with a core app shell  
+- Router using History API  
+- State manager to sync data across modules  
+- Service layer for CRUD simulations on data.js  
+- Event bus for cross-component events  
+- Utility libs for dates, currency formatting  
+
+---  
+## Project Structure  

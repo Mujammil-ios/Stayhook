@@ -39,67 +39,49 @@ const Sidebar = ({ mobileMenuOpen }: SidebarProps) => {
       <nav className="flex-1 py-5 px-3 overflow-y-auto">
         <div className="space-y-1">
           <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Main</h3>
-          <Link href="/dashboard">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/dashboard") || isActive("/") ? "active" : ""}`}>
-              <i className="ri-dashboard-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Dashboard
-            </a>
+          <Link href="/dashboard" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/dashboard") || isActive("/") ? "active" : ""}`}>
+            <i className="ri-dashboard-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Dashboard
           </Link>
-          <Link href="/property">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/property") ? "active" : ""}`}>
-              <i className="ri-building-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Property Profile
-            </a>
+          <Link href="/property" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/property") ? "active" : ""}`}>
+            <i className="ri-building-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Property Profile
           </Link>
-          <Link href="/rooms">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/rooms") ? "active" : ""}`}>
-              <i className="ri-door-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Room Management
-            </a>
+          <Link href="/rooms" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/rooms") ? "active" : ""}`}>
+            <i className="ri-door-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Room Management
           </Link>
-          <Link href="/bookings">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/bookings") ? "active" : ""}`}>
-              <i className="ri-calendar-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Booking History
-            </a>
+          <Link href="/bookings" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/bookings") ? "active" : ""}`}>
+            <i className="ri-calendar-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Booking History
           </Link>
-          <Link href="/reservations">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/reservations") ? "active" : ""}`}>
-              <i className="ri-calendar-check-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Reservation System
-            </a>
+          <Link href="/reservations" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/reservations") ? "active" : ""}`}>
+            <i className="ri-calendar-check-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Reservation System
           </Link>
         </div>
         
         <div className="mt-8 space-y-1">
           <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Management</h3>
-          <Link href="/staff">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/staff") ? "active" : ""}`}>
-              <i className="ri-team-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Staff Portal
-            </a>
+          <Link href="/staff" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/staff") ? "active" : ""}`}>
+            <i className="ri-team-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Staff Portal
           </Link>
-          <Link href="/analytics">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/analytics") ? "active" : ""}`}>
-              <i className="ri-line-chart-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Revenue Analytics
-            </a>
+          <Link href="/analytics" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/analytics") ? "active" : ""}`}>
+            <i className="ri-line-chart-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Revenue Analytics
           </Link>
         </div>
         
         <div className="mt-8 space-y-1">
           <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">System</h3>
-          <Link href="/settings">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/settings") ? "active" : ""}`}>
-              <i className="ri-settings-3-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Settings
-            </a>
+          <Link href="/settings" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/settings") ? "active" : ""}`}>
+            <i className="ri-settings-3-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Settings
           </Link>
-          <Link href="/help">
-            <a className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/help") ? "active" : ""}`}>
-              <i className="ri-question-line mr-3 text-neutral-500 group-hover:text-primary"></i>
-              Help & Support
-            </a>
+          <Link href="/help" className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 group ${isActive("/help") ? "active" : ""}`}>
+            <i className="ri-question-line mr-3 text-neutral-500 group-hover:text-primary"></i>
+            Help & Support
           </Link>
         </div>
       </nav>
