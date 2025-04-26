@@ -8,13 +8,25 @@ const Footer = () => {
           &copy; {new Date().getFullYear()} HotelHub Management System. All rights reserved.
         </div>
         <div className="mt-4 md:mt-0 flex flex-wrap justify-center md:justify-end gap-3 sm:gap-4 md:gap-6">
-          <Link href="/help#privacy" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
+          <Link 
+            href="/privacy-policy" 
+            className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80 touch-target px-1 flex items-center"
+          >
+            <i className="ri-shield-line mr-1.5 text-xs"></i>
             Privacy Policy
           </Link>
-          <Link href="/help#terms" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
-            Terms of Service
+          <Link 
+            href="/terms-and-conditions" 
+            className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80 touch-target px-1 flex items-center"
+          >
+            <i className="ri-file-text-line mr-1.5 text-xs"></i>
+            Terms & Conditions
           </Link>
-          <Link href="/help#contact" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80">
+          <Link 
+            href="/help#contact" 
+            className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80 touch-target px-1 flex items-center"
+          >
+            <i className="ri-customer-service-line mr-1.5 text-xs"></i>
             Contact Support
           </Link>
         </div>

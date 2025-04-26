@@ -1,0 +1,28 @@
+I need you to fix several UI issues and add new navigation flows in our Hotel Management System. Please execute all steps straight through without pausing:
+
+1. MOBILE SIDEBAR TOGGLE  
+   - On mobile, the sidebar icon currently causes a screen “flinch” but never shows the menu.  
+   - Implement a proper slide-in/out animation for the sidebar using Tailwind’s transition and transform utilities.  
+   - Ensure the sidebar becomes fully visible at small breakpoints (≤640px) when the hamburger icon is tapped, and hides when tapping outside or on the close icon.  
+   - Fix any z-index or overflow issues so that the menu overlays content correctly.
+
+2. FOOTER LINKS  
+   - In the site footer, add two links: “Terms & Conditions” and “Privacy Policy”.  
+   - Link them to the existing pages `/terms-and-conditions` and `/privacy-policy`.  
+   - Style the links consistently with other footer items and ensure they’re tappable on mobile.
+
+3. DASHBOARD “VIEW ALL” PAGES  
+   - In the dashboard header or summary cards, you have “View All Room Types” and “View All Recent Bookings”.  
+   - Make each “View All” button/link navigate to a new full-screen page:  
+     - `/room-types` – displays a list of all room types with basic filters (type, price range).  
+     - `/recent-bookings` – displays a list of recent bookings sortable by date and searchable by guest name.  
+   - On those pages, fetch or mock the data and render it in a responsive table or card list.  
+   - Add a back button or breadcrumb to return to the dashboard.
+
+4. IMPLEMENTATION REQUIREMENTS  
+   - Use existing project routes, component patterns, and Tailwind classes.  
+   - Ensure all new links/buttons have hover/focus states and are fully keyboard-accessible.  
+   - Test on mobile (375×667), tablet (768×1024), and desktop (1440×900) to confirm the sidebar, footer links, and “View All” pages work correctly.  
+   - Do not introduce new external libraries; build on the current codebase.
+
+Deliver the complete code changes for each item—sidebar toggle, footer, and “View All” pages—in a single batch without mid-process confirmations.

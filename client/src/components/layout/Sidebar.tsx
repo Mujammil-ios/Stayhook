@@ -5,9 +5,10 @@ import { useEffect } from "react";
 
 interface SidebarProps {
   mobileMenuOpen: boolean;
+  toggleMobileMenu?: () => void;
 }
 
-const Sidebar = ({ mobileMenuOpen }: SidebarProps) => {
+const Sidebar = ({ mobileMenuOpen, toggleMobileMenu }: SidebarProps) => {
   const [location] = useLocation();
   const isMobile = useIsMobile();
 
@@ -36,8 +37,8 @@ const Sidebar = ({ mobileMenuOpen }: SidebarProps) => {
   }, [mobileMenuOpen, isMobile]);
 
   const sidebarClasses = `
-    fixed h-full z-30 w-64 
-    bg-white dark:bg-neutral-800 transition-all duration-300 ease-in-out
+    fixed h-full z-40 w-64 
+    bg-white dark:bg-neutral-800 transition-transform duration-300 ease-in-out
     border-r border-gray-200 dark:border-neutral-700
     md:flex md:flex-col
     ${mobileMenuOpen ? 'translate-x-0 shadow-lg' : '-translate-x-full md:translate-x-0 md:shadow-none'}
@@ -58,6 +59,17 @@ const Sidebar = ({ mobileMenuOpen }: SidebarProps) => {
           </div>
           <h1 className="text-xl font-semibold">HotelHub</h1>
         </div>
+        {/* Mobile close button */}
+        {isMobile && mobileMenuOpen && (
+          <button 
+            type="button"
+            className="md:hidden rounded-full p-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+            onClick={() => toggleMobileMenu?.()}
+            aria-label="Close menu"
+          >
+            <i className="ri-close-line text-lg"></i>
+          </button>
+        )}
       </div>
       
       <nav className="flex-1 py-4 px-3 overflow-y-auto overflow-x-hidden">

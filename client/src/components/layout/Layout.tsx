@@ -40,7 +40,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       <div className="flex flex-1 relative">
-        <Sidebar mobileMenuOpen={mobileMenuOpen} />
+        <Sidebar mobileMenuOpen={mobileMenuOpen} toggleMobileMenu={toggleMobileMenu} />
         
         {/* Main content area */}
         <div className="flex-1 md:ml-64 flex flex-col w-full">
