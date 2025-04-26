@@ -1,85 +1,87 @@
 import React, { useState } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
+import { format } from 'date-fns';
+import { CalendarIcon, PlusCircleIcon, XCircleIcon, Users2Icon, BedIcon, CreditCardIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage 
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-
-import { format } from 'date-fns';
-import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
-import { useReservation, ReservationFormData } from '../hooks/useReservation';
-import { InvoiceModal } from '../../invoice/components/InvoiceModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
-// Validation schema for the reservation form
+import { useToast } from '@/hooks/use-toast';
+import { useReservation, ReservationFormData } from '../hooks/useReservation';
+import { InvoiceModal } from '../../invoice/components/InvoiceModal';
+
+// Create a schema for form validation
 const reservationSchema = z.object({
-  // Customer details
-  customerName: z.string().min(3, "Name must be at least 3 characters"),
-  aadharNo: z.string().min(12, "Aadhar number must be 12 digits").max(12),
-  mobileNo: z.string().min(10, "Mobile number must be at least 10 digits"),
+  customerName: z.string().min(3, { message: 'Name must be at least 3 characters long' }),
+  aadharNo: z.string().min(12, { message: 'Aadhar number must be at least 12 characters' }),
+  mobileNo: z.string().min(10, { message: 'Mobile number must be at least 10 characters' }),
   vehicleNo: z.string().optional(),
-  
-  // Dates
   checkInDate: z.date({
-    required_error: "Check-in date is required",
+    required_error: 'Check-in date is required',
   }),
   checkOutDate: z.date({
-    required_error: "Check-out date is required",
+    required_error: 'Check-out date is required',
   }),
-  
-  // Travel details
-  travellingFrom: z.string().min(2, "Origin location is required"),
-  travellingTo: z.string().min(2, "Destination is required"),
-  
-  // Guest counts
-  maleCount: z.number().min(0).default(0),
-  femaleCount: z.number().min(0).default(0),
-  childCount: z.number().min(0).default(0),
-  
-  // Additional details
-  address: z.string().min(5, "Address is required"),
-  nationality: z.string().min(2, "Nationality is required"),
-  
-  // Room details
-  roomId: z.number(),
-  roomType: z.string(),
-  roomRate: z.number().min(1, "Room rate must be greater than 0"),
-  
-  // Additional guests (array with validation for each guest)
+  travellingFrom: z.string().min(2, { message: 'Please specify where the guest is travelling from' }),
+  travellingTo: z.string().min(2, { message: 'Please specify where the guest is travelling to' }),
+  maleCount: z.coerce.number().min(0),
+  femaleCount: z.coerce.number().min(0),
+  childCount: z.coerce.number().min(0),
+  address: z.string().min(5, { message: 'Address must be at least 5 characters' }),
+  nationality: z.string().min(2, { message: 'Nationality is required' }),
+  roomId: z.coerce.number().min(1, { message: 'Room selection is required' }),
+  roomType: z.string().min(1, { message: 'Room type is required' }),
+  roomRate: z.coerce.number().min(1, { message: 'Room rate is required' }),
+  email: z.string().email({ message: 'Invalid email address' }).optional(),
   additionalGuests: z.array(
     z.object({
-      name: z.string().min(3, "Name must be at least 3 characters"),
-      idNumber: z.string().min(1, "ID is required"),
-      mobileNo: z.string().min(10, "Mobile number must be at least 10 digits")
+      name: z.string().min(3, { message: 'Name must be at least 3 characters' }),
+      idNumber: z.string().min(5, { message: 'ID number must be at least 5 characters' }),
+      mobileNo: z.string().min(10, { message: 'Mobile number must be at least 10 characters' }),
     })
-  ).optional().default([]),
+  ).optional(),
 });
 
-export default function CreateReservation() {
-  const { isSubmitting, createdReservation, step, createReservation } = useReservation();
-  const [aadharImage, setAadharImage] = useState<File | null>(null);
-  const [customerPhoto, setCustomerPhoto] = useState<File | null>(null);
-  const navigate = useNavigate();
+// Form component for creating a reservation
+export function CreateReservation() {
+  const [activeTab, setActiveTab] = useState('guest-details');
+  const { toast } = useToast();
+  const [_, setLocation] = useLocation();
   
+  // Reservation hook for managing the reservation creation process
+  const {
+    isSubmitting,
+    createdReservation,
+    isInvoiceModalOpen,
+    createReservation,
+    closeInvoiceModal,
+    resetForm
+  } = useReservation();
+
+  // Sample room data (would be fetched from an API in a real implementation)
+  const roomOptions = [
+    { id: 101, type: 'Standard Single', rate: 1500 },
+    { id: 102, type: 'Standard Double', rate: 2500 },
+    { id: 103, type: 'Deluxe Single', rate: 3000 },
+    { id: 104, type: 'Deluxe Double', rate: 4000 },
+    { id: 201, type: 'Suite', rate: 6000 },
+  ];
+
   // Initialize form with default values
-  const methods = useForm<ReservationFormData>({
+  const form = useForm<ReservationFormData>({
     resolver: zodResolver(reservationSchema),
     defaultValues: {
       customerName: '',
@@ -90,7 +92,7 @@ export default function CreateReservation() {
       checkOutDate: new Date(new Date().setDate(new Date().getDate() + 1)),
       travellingFrom: '',
       travellingTo: '',
-      maleCount: 0,
+      maleCount: 1,
       femaleCount: 0,
       childCount: 0,
       address: '',
@@ -98,159 +100,256 @@ export default function CreateReservation() {
       roomId: 0,
       roomType: '',
       roomRate: 0,
-      additionalGuests: []
-    }
+      email: '',
+      additionalGuests: [],
+    },
   });
-  
+
   // Handle form submission
   const onSubmit = async (data: ReservationFormData) => {
-    // Add the file uploads to the form data
-    if (aadharImage) {
-      data.aadharImage = aadharImage;
+    // Additional validation
+    if (data.maleCount + data.femaleCount < 1) {
+      toast({
+        title: 'Validation Error',
+        description: 'At least one adult guest is required.',
+        variant: 'destructive',
+      });
+      return;
     }
-    
-    if (customerPhoto) {
-      data.customerPhoto = customerPhoto;
+
+    if (data.checkOutDate < data.checkInDate) {
+      toast({
+        title: 'Validation Error',
+        description: 'Check-out date must be after check-in date.',
+        variant: 'destructive',
+      });
+      return;
     }
-    
+
     // Create the reservation
-    await createReservation(data);
+    try {
+      const result = await createReservation(data);
+      if (result) {
+        // Success is handled in the useReservation hook
+      }
+    } catch (error) {
+      console.error('Error in form submission:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create reservation. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
-  
-  // Handle adding a new additional guest
+
+  // Handle additional guest functionality
+  const [additionalGuests, setAdditionalGuests] = useState<{ name: string; idNumber: string; mobileNo: string }[]>([]);
+
   const addGuest = () => {
-    const currentGuests = methods.getValues('additionalGuests') || [];
-    if (currentGuests.length < 3) {
-      methods.setValue('additionalGuests', [
-        ...currentGuests,
-        { name: '', idNumber: '', mobileNo: '' }
-      ]);
-    }
+    setAdditionalGuests([...additionalGuests, { name: '', idNumber: '', mobileNo: '' }]);
   };
-  
-  // Handle removing an additional guest
+
   const removeGuest = (index: number) => {
-    const currentGuests = methods.getValues('additionalGuests') || [];
-    const updatedGuests = currentGuests.filter((_, i) => i !== index);
-    methods.setValue('additionalGuests', updatedGuests);
+    const newGuests = [...additionalGuests];
+    newGuests.splice(index, 1);
+    setAdditionalGuests(newGuests);
+    form.setValue('additionalGuests', newGuests);
   };
-  
-  // Handle file uploads
-  const handleAadharImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setAadharImage(e.target.files[0]);
+
+  const updateGuest = (index: number, field: string, value: string) => {
+    const newGuests = [...additionalGuests];
+    newGuests[index] = { ...newGuests[index], [field]: value };
+    setAdditionalGuests(newGuests);
+    form.setValue('additionalGuests', newGuests);
+  };
+
+  // Handle room selection
+  const handleRoomSelect = (roomId: string) => {
+    const room = roomOptions.find(r => r.id === parseInt(roomId));
+    if (room) {
+      form.setValue('roomId', room.id);
+      form.setValue('roomType', room.type);
+      form.setValue('roomRate', room.rate);
     }
   };
-  
-  const handleCustomerPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setCustomerPhoto(e.target.files[0]);
-    }
-  };
-  
+
+  // Calculate total guests
+  const totalGuests = (form.watch('maleCount') || 0) + (form.watch('femaleCount') || 0) + (form.watch('childCount') || 0);
+
+  // Calculate total nights
+  const checkInDate = form.watch('checkInDate');
+  const checkOutDate = form.watch('checkOutDate');
+  const totalNights = checkInDate && checkOutDate ? 
+    Math.max(1, Math.floor((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))) : 1;
+
+  // Calculate total cost
+  const roomRate = form.watch('roomRate') || 0;
+  const totalCost = roomRate * totalNights;
+
   return (
-    <>
-      {step === 'reservation' ? (
-        <Card className="w-full max-w-4xl mx-auto">
-          <CardHeader>
-            <CardTitle>Create New Reservation</CardTitle>
-            <CardDescription>Enter guest details to create a new reservation</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormProvider {...methods}>
-              <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Personal Information</h3>
+    <div className="container max-w-5xl mx-auto py-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Create Reservation</h1>
+          <p className="text-muted-foreground">Create a new guest reservation</p>
+        </div>
+        <Button variant="outline" onClick={() => setLocation('/reservations')}>
+          Back to Reservations
+        </Button>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-3 w-full">
+              <TabsTrigger value="guest-details">Guest Details</TabsTrigger>
+              <TabsTrigger value="booking-details">Booking Details</TabsTrigger>
+              <TabsTrigger value="room-selection">Room & Payment</TabsTrigger>
+            </TabsList>
+
+            {/* Guest Details Tab */}
+            <TabsContent value="guest-details" className="space-y-4 pt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Primary Guest Information</CardTitle>
+                  <CardDescription>Enter the details of the primary guest</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
-                      control={methods.control}
+                      control={form.control}
                       name="customerName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Customer Name*</FormLabel>
+                          <FormLabel>Full Name*</FormLabel>
                           <FormControl>
-                            <Input placeholder="Full name" {...field} />
+                            <Input {...field} placeholder="Enter full name" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
-                      control={methods.control}
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input {...field} type="email" placeholder="email@example.com" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
                       name="mobileNo"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Mobile Number*</FormLabel>
                           <FormControl>
-                            <Input placeholder="10-digit mobile number" {...field} />
+                            <Input {...field} placeholder="Enter mobile number" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
-                      control={methods.control}
+                      control={form.control}
                       name="aadharNo"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Aadhar Number*</FormLabel>
                           <FormControl>
-                            <Input placeholder="12-digit Aadhar number" {...field} />
+                            <Input {...field} placeholder="Enter Aadhar number" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
-                    <FormItem>
-                      <FormLabel>Aadhar Card Image</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={handleAadharImageChange}
-                        />
-                      </FormControl>
-                      <FormDescription>Upload a copy of the Aadhar card</FormDescription>
-                    </FormItem>
-                    
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Address*</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} placeholder="Enter full address" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
-                      control={methods.control}
+                      control={form.control}
+                      name="nationality"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nationality*</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select nationality" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Indian">Indian</SelectItem>
+                              <SelectItem value="Foreign">Foreign</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="vehicleNo"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Vehicle Number (Optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="Vehicle registration number" {...field} />
+                            <Input {...field} placeholder="Enter vehicle number if any" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
-                    <FormItem>
-                      <FormLabel>Customer Photo (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={handleCustomerPhotoChange}
-                        />
-                      </FormControl>
-                      <FormDescription>Take a live photo of the customer</FormDescription>
-                    </FormItem>
                   </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Stay Information</h3>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <div></div>
+                  <Button type="button" onClick={() => setActiveTab('booking-details')}>
+                    Continue to Booking Details
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            {/* Booking Details Tab */}
+            <TabsContent value="booking-details" className="space-y-4 pt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Stay Information</CardTitle>
+                  <CardDescription>Specify the travel and stay details</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
-                      control={methods.control}
+                      control={form.control}
                       name="checkInDate"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
@@ -259,7 +358,7 @@ export default function CreateReservation() {
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
-                                  variant="outline"
+                                  variant={"outline"}
                                   className={cn(
                                     "w-full pl-3 text-left font-normal",
                                     !field.value && "text-muted-foreground"
@@ -268,7 +367,7 @@ export default function CreateReservation() {
                                   {field.value ? (
                                     format(field.value, "PPP")
                                   ) : (
-                                    <span>Pick a date</span>
+                                    <span>Select date</span>
                                   )}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
@@ -279,49 +378,8 @@ export default function CreateReservation() {
                                 mode="single"
                                 selected={field.value}
                                 onSelect={field.onChange}
-                                disabled={(date) => date < new Date()}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={methods.control}
-                      name="checkOutDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Check-out Date*</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => 
-                                  date < methods.getValues('checkInDate') ||
-                                  date < new Date()
+                                disabled={(date) =>
+                                  date < new Date(new Date().setHours(0, 0, 0, 0))
                                 }
                                 initialFocus
                               />
@@ -331,182 +389,132 @@ export default function CreateReservation() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
-                      control={methods.control}
-                      name="roomType"
+                      control={form.control}
+                      name="checkOutDate"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Room Type*</FormLabel>
-                          <Select 
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              // Set a default room rate based on room type
-                              const rates: Record<string, number> = {
-                                "standard": 1000,
-                                "deluxe": 1500,
-                                "suite": 2500,
-                                "family": 2000,
-                              };
-                              methods.setValue('roomRate', rates[value] || 0);
-                            }}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select room type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="standard">Standard</SelectItem>
-                              <SelectItem value="deluxe">Deluxe</SelectItem>
-                              <SelectItem value="suite">Suite</SelectItem>
-                              <SelectItem value="family">Family</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={methods.control}
-                      name="roomRate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Room Rate (₹)*</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              {...field} 
-                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={methods.control}
-                      name="roomId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Room Number*</FormLabel>
-                          <Select 
-                            onValueChange={(value) => field.onChange(parseInt(value))}
-                            defaultValue={field.value.toString()}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select room number" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="101">101</SelectItem>
-                              <SelectItem value="102">102</SelectItem>
-                              <SelectItem value="103">103</SelectItem>
-                              <SelectItem value="201">201</SelectItem>
-                              <SelectItem value="202">202</SelectItem>
-                            </SelectContent>
-                          </Select>
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Check-out Date*</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Select date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => {
+                                  const checkIn = form.getValues().checkInDate;
+                                  return checkIn && date < checkIn;
+                                }}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Travel Information</h3>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
-                      control={methods.control}
+                      control={form.control}
                       name="travellingFrom"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Travelling From*</FormLabel>
                           <FormControl>
-                            <Input placeholder="City/Location" {...field} />
+                            <Input {...field} placeholder="Enter origin" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
-                      control={methods.control}
+                      control={form.control}
                       name="travellingTo"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Travelling To*</FormLabel>
                           <FormControl>
-                            <Input placeholder="City/Location" {...field} />
+                            <Input {...field} placeholder="Enter destination" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Guest Count</h3>
+
                   <div className="grid grid-cols-3 gap-4">
                     <FormField
-                      control={methods.control}
+                      control={form.control}
                       name="maleCount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Male</FormLabel>
+                          <FormLabel>Adult Males*</FormLabel>
                           <FormControl>
                             <Input 
+                              {...field} 
                               type="number" 
-                              min="0"
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              min="0" 
+                              onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
-                      control={methods.control}
+                      control={form.control}
                       name="femaleCount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Female</FormLabel>
+                          <FormLabel>Adult Females*</FormLabel>
                           <FormControl>
                             <Input 
+                              {...field} 
                               type="number" 
                               min="0"
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
-                      control={methods.control}
+                      control={form.control}
                       name="childCount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Children</FormLabel>
+                          <FormLabel>Children*</FormLabel>
                           <FormControl>
                             <Input 
+                              {...field} 
                               type="number" 
                               min="0"
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                             />
                           </FormControl>
                           <FormMessage />
@@ -514,148 +522,192 @@ export default function CreateReservation() {
                       )}
                     />
                   </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Additional Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={methods.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem className="col-span-1 md:col-span-2">
-                          <FormLabel>Address*</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Enter complete address" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={methods.control}
-                      name="nationality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nationality*</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Country of citizenship" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Additional Guests</h3>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={addGuest}
-                      disabled={methods.getValues('additionalGuests')?.length >= 3}
-                    >
-                      <PlusCircle className="h-4 w-4 mr-2" /> Add Guest
-                    </Button>
-                  </div>
-                  
-                  {(methods.getValues('additionalGuests') || []).map((_, index) => (
-                    <div key={index} className="border rounded-md p-4 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium">Guest {index + 1}</h4>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeGuest(index)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={methods.control}
-                          name={`additionalGuests.${index}.name`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Name*</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Full name" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={methods.control}
-                          name={`additionalGuests.${index}.idNumber`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>ID Number*</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Aadhar/Passport No." {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={methods.control}
-                          name={`additionalGuests.${index}.mobileNo`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Mobile No.*</FormLabel>
-                              <FormControl>
-                                <Input placeholder="10-digit mobile number" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">Additional Guests</h4>
+                      <Button 
+                        type="button" 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={addGuest}
+                        className="flex items-center gap-1"
+                      >
+                        <PlusCircleIcon className="h-4 w-4" />
+                        Add Guest
+                      </Button>
                     </div>
-                  ))}
-                  
-                  {(methods.getValues('additionalGuests')?.length === 0) && (
-                    <div className="text-center text-muted-foreground py-4">
-                      No additional guests added. Click "Add Guest" to include more guests.
-                    </div>
-                  )}
-                </div>
-                
-                <CardFooter className="flex justify-between pt-6 px-0">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => navigate('/reservations')}
-                  >
-                    Cancel
+
+                    {additionalGuests.map((guest, index) => (
+                      <div key={index} className="border rounded-md p-4 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium">Guest {index + 1}</h4>
+                          <Button 
+                            type="button" 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => removeGuest(index)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <XCircleIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <FormLabel className="text-xs">Name</FormLabel>
+                            <Input 
+                              value={guest.name} 
+                              onChange={e => updateGuest(index, 'name', e.target.value)}
+                              placeholder="Guest name" 
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <FormLabel className="text-xs">ID Number</FormLabel>
+                            <Input 
+                              value={guest.idNumber} 
+                              onChange={e => updateGuest(index, 'idNumber', e.target.value)}
+                              placeholder="ID number" 
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <FormLabel className="text-xs">Mobile Number</FormLabel>
+                            <Input 
+                              value={guest.mobileNo} 
+                              onChange={e => updateGuest(index, 'mobileNo', e.target.value)}
+                              placeholder="Mobile number" 
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button type="button" variant="outline" onClick={() => setActiveTab('guest-details')}>
+                    Back
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating...' : 'Create Reservation'}
+                  <Button type="button" onClick={() => setActiveTab('room-selection')}>
+                    Continue to Room Selection
                   </Button>
                 </CardFooter>
-              </form>
-            </FormProvider>
-          </CardContent>
-        </Card>
-      ) : (
-        <InvoiceModal 
-          reservation={createdReservation!} 
-          onClose={() => navigate('/reservations')} 
-        />
-      )}
-    </>
+              </Card>
+            </TabsContent>
+
+            {/* Room Selection Tab */}
+            <TabsContent value="room-selection" className="space-y-4 pt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Room Selection & Payment</CardTitle>
+                  <CardDescription>Select a room and review the booking details</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="roomId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Select Room*</FormLabel>
+                          <Select
+                            onValueChange={(value) => handleRoomSelect(value)}
+                            defaultValue={field.value ? field.value.toString() : undefined}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a room" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {roomOptions.map((room) => (
+                                <SelectItem key={room.id} value={room.id.toString()}>
+                                  Room {room.id} - {room.type} (₹{room.rate}/night)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Booking Summary</h4>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
+                        <Users2Icon className="h-5 w-5 mb-2" />
+                        <div className="text-sm font-medium">{totalGuests} Guests</div>
+                        <div className="text-xs text-muted-foreground">
+                          {form.watch('maleCount') || 0} M, {form.watch('femaleCount') || 0} F, {form.watch('childCount') || 0} Children
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
+                        <BedIcon className="h-5 w-5 mb-2" />
+                        <div className="text-sm font-medium">{form.watch('roomType') || 'No Room Selected'}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {form.watch('roomId') ? `Room ${form.watch('roomId')}` : 'Please select a room'}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
+                        <CalendarIcon className="h-5 w-5 mb-2" />
+                        <div className="text-sm font-medium">{totalNights} {totalNights === 1 ? 'Night' : 'Nights'}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {checkInDate && format(checkInDate, 'PP')} - {checkOutDate && format(checkOutDate, 'PP')}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 border rounded-md">
+                      <div className="flex justify-between py-2">
+                        <span>Room Charges</span>
+                        <span>₹{roomRate} x {totalNights} nights</span>
+                      </div>
+                      <Separator className="my-2" />
+                      <div className="flex justify-between py-2 font-medium">
+                        <span>Total Amount</span>
+                        <span>₹{totalCost}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-2">
+                        <p>* Taxes and additional charges will be calculated at checkout</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button type="button" variant="outline" onClick={() => setActiveTab('booking-details')}>
+                    Back
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
+                    {isSubmitting ? (
+                      'Submitting...'
+                    ) : (
+                      <>
+                        <CreditCardIcon className="h-4 w-4" />
+                        Complete Reservation
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </form>
+      </Form>
+
+      {/* Invoice Modal */}
+      <InvoiceModal 
+        isOpen={isInvoiceModalOpen} 
+        onClose={closeInvoiceModal} 
+        reservation={createdReservation} 
+      />
+    </div>
   );
 }

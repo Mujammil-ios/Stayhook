@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { format, addDays } from "date-fns";
+import { useLocation } from "wouter";
 import { roomsData, guestsData } from "@/lib/data";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,7 @@ const Reservations = () => {
   const [selectedGuest, setSelectedGuest] = useState("");
   const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
   const { toast } = useToast();
+  const [_, setLocation] = useLocation();
   
   // Get unique room types
   const roomTypes = Array.from(new Set(roomsData.map(room => room.category)));
@@ -50,7 +52,14 @@ const Reservations = () => {
     <div>
       <div className="mb-6 sm:flex sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Reservation System</h1>
-        <div className="mt-3 sm:mt-0">
+        <div className="mt-3 sm:mt-0 flex gap-2">
+          <Button
+            onClick={() => setLocation('/reservations/create')}
+            variant="outline"
+          >
+            <i className="ri-add-line mr-2"></i>
+            New Reservation
+          </Button>
           <Button
             onClick={() => setIsBookingModalOpen(true)}
             disabled={!selectedGuest || !selectedRoom}

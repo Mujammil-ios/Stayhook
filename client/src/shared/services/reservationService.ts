@@ -1,332 +1,250 @@
-/**
- * Reservation Service
- * 
- * Service for reservation-related API operations.
- */
-
-import type { ApiResponse } from './api';
-import { apiRequest } from './api';
-import type { Reservation, InsertReservation } from '../../types';
-
-// API endpoints for reservations
-const ENDPOINTS = {
-  BASE: '/api/reservations',
-  DETAIL: (id: number | string) => `/api/reservations/${id}`,
-  ROOM: (roomId: number | string) => `/api/rooms/${roomId}/reservations`,
-  GUEST: (guestId: number | string) => `/api/guests/${guestId}/reservations`,
-  CALENDAR: '/api/reservations/calendar',
-  STATS: '/api/reservations/stats',
-  CHECKOUT: (id: number | string) => `/api/reservations/${id}/checkout`,
-  CHECKIN: (id: number | string) => `/api/reservations/${id}/checkin`,
-  CANCEL: (id: number | string) => `/api/reservations/${id}/cancel`,
-};
+import api from './api';
+import { Reservation, InsertReservation, DetailedReservation, ApiResponse } from '@/types';
 
 /**
- * Reservation Service class for handling reservation-related API operations
+ * Service for handling reservation-related API calls
  */
-class ReservationService {
+const reservationService = {
   /**
    * Get all reservations
+   * @returns Promise with array of reservations
    */
-  async getAll(filters?: {
-    status?: string;
-    startDate?: Date;
-    endDate?: Date;
-  }): Promise<ApiResponse<Reservation[]>> {
-    // For demonstration, returning mock data
-    return {
-      success: true,
-      data: [
-        {
-          id: 1,
-          roomId: 101,
-          guestId: 1,
-          checkInDate: new Date(2023, 9, 10),
-          checkOutDate: new Date(2023, 9, 15),
-          status: 'confirmed',
-          totalAmount: 750,
-          paymentStatus: 'paid',
-          specialRequests: 'Late check-in, around 10 PM',
-          createdAt: new Date(2023, 8, 20),
-          updatedAt: new Date(2023, 8, 20),
-        },
-        {
-          id: 2,
-          roomId: 203,
-          guestId: 2,
-          checkInDate: new Date(2023, 9, 20),
-          checkOutDate: new Date(2023, 9, 25),
-          status: 'pending',
-          totalAmount: 1200,
-          paymentStatus: 'pending',
-          specialRequests: 'Additional towels and extra pillows',
-          createdAt: new Date(2023, 9, 1),
-          updatedAt: new Date(2023, 9, 1),
-        },
-      ]
-    };
-    
-    // Real implementation would be:
-    // const params: Record<string, string> = {};
-    // 
-    // if (filters?.status) {
-    //   params.status = filters.status;
-    // }
-    // 
-    // if (filters?.startDate) {
-    //   params.startDate = filters.startDate.toISOString();
-    // }
-    // 
-    // if (filters?.endDate) {
-    //   params.endDate = filters.endDate.toISOString();
-    // }
-    // 
-    // return await apiRequest<Reservation[]>({
-    //   url: ENDPOINTS.BASE,
-    //   method: 'GET',
-    //   params,
-    // });
-  }
-
-  /**
-   * Get a reservation by ID
-   */
-  async getById(id: number): Promise<ApiResponse<Reservation>> {
-    // Mock implementation
-    const allReservations = await this.getAll();
-    const reservation = allReservations.data?.find(r => r.id === id);
-    
-    if (reservation) {
+  async getAll(): Promise<ApiResponse<Reservation[]>> {
+    try {
+      return await api.get<Reservation[]>('/api/reservations');
+    } catch (error) {
+      console.error('Error fetching reservations:', error);
       return {
-        success: true,
-        data: reservation
+        success: false,
+        data: [],
+        message: error instanceof Error ? error.message : 'Failed to fetch reservations',
       };
     }
-    
-    return {
-      success: false,
-      message: 'Reservation not found'
-    };
-    
-    // Real implementation would be:
-    // return await apiRequest<Reservation>({
-    //   url: ENDPOINTS.DETAIL(id),
-    //   method: 'GET',
-    // });
-  }
+  },
+
+  /**
+   * Get a specific reservation by ID
+   * @param id The reservation ID
+   * @returns Promise with the reservation data
+   */
+  async getById(id: number): Promise<ApiResponse<Reservation>> {
+    try {
+      return await api.get<Reservation>(`/api/reservations/${id}`);
+    } catch (error) {
+      console.error(`Error fetching reservation ${id}:`, error);
+      return {
+        success: false,
+        data: {} as Reservation,
+        message: error instanceof Error ? error.message : `Failed to fetch reservation ${id}`,
+      };
+    }
+  },
+
+  /**
+   * Get detailed reservation information including related data
+   * @param id The reservation ID
+   * @returns Promise with detailed reservation info
+   */
+  async getDetailedById(id: number): Promise<ApiResponse<DetailedReservation>> {
+    try {
+      return await api.get<DetailedReservation>(`/api/reservations/${id}/detailed`);
+    } catch (error) {
+      console.error(`Error fetching detailed reservation ${id}:`, error);
+      return {
+        success: false,
+        data: {} as DetailedReservation,
+        message: error instanceof Error ? error.message : `Failed to fetch detailed reservation ${id}`,
+      };
+    }
+  },
 
   /**
    * Get reservations for a specific room
+   * @param roomId The room ID
+   * @returns Promise with array of reservations
    */
   async getByRoomId(roomId: number): Promise<ApiResponse<Reservation[]>> {
-    // Mock implementation
-    const allReservations = await this.getAll();
-    const reservations = allReservations.data?.filter(r => r.roomId === roomId) || [];
-    
-    return {
-      success: true,
-      data: reservations
-    };
-    
-    // Real implementation would be:
-    // return await apiRequest<Reservation[]>({
-    //   url: ENDPOINTS.ROOM(roomId),
-    //   method: 'GET',
-    // });
-  }
+    try {
+      return await api.get<Reservation[]>(`/api/reservations/room/${roomId}`);
+    } catch (error) {
+      console.error(`Error fetching reservations for room ${roomId}:`, error);
+      return {
+        success: false,
+        data: [],
+        message: error instanceof Error ? error.message : `Failed to fetch reservations for room ${roomId}`,
+      };
+    }
+  },
 
   /**
    * Get reservations for a specific guest
+   * @param guestId The guest ID
+   * @returns Promise with array of reservations
    */
   async getByGuestId(guestId: number): Promise<ApiResponse<Reservation[]>> {
-    // Mock implementation
-    const allReservations = await this.getAll();
-    const reservations = allReservations.data?.filter(r => r.guestId === guestId) || [];
-    
-    return {
-      success: true,
-      data: reservations
-    };
-    
-    // Real implementation would be:
-    // return await apiRequest<Reservation[]>({
-    //   url: ENDPOINTS.GUEST(guestId),
-    //   method: 'GET',
-    // });
-  }
+    try {
+      return await api.get<Reservation[]>(`/api/reservations/guest/${guestId}`);
+    } catch (error) {
+      console.error(`Error fetching reservations for guest ${guestId}:`, error);
+      return {
+        success: false,
+        data: [],
+        message: error instanceof Error ? error.message : `Failed to fetch reservations for guest ${guestId}`,
+      };
+    }
+  },
 
   /**
-   * Get calendar data for reservations
+   * Get reservations by status (confirmed, pending, cancelled, etc.)
+   * @param status The reservation status
+   * @returns Promise with array of reservations
    */
-  async getCalendarData(
-    startDate: Date,
-    endDate: Date
-  ): Promise<ApiResponse<any>> {
-    // Mock implementation
-    const calendarData: Record<string, any[]> = {};
-    
-    // Generate some demo data for the date range
-    const currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
-      calendarData[dateStr] = [];
-      
-      // Add some random reservations for demonstration
-      if (Math.random() > 0.3) { // 70% chance of having reservations on a day
-        const count = Math.floor(Math.random() * 5) + 1; // 1-5 reservations
-        for (let i = 0; i < count; i++) {
-          calendarData[dateStr].push({
-            id: Math.floor(Math.random() * 1000) + 1,
-            roomId: Math.floor(Math.random() * 20) + 101, // Room numbers 101-120
-            guestId: Math.floor(Math.random() * 50) + 1, // Guest IDs 1-50
-            status: Math.random() > 0.2 ? 'confirmed' : 'pending', // 80% confirmed, 20% pending
-            guestName: `Guest ${Math.floor(Math.random() * 100)}`,
-          });
-        }
-      }
-      
-      // Move to next day
-      currentDate.setDate(currentDate.getDate() + 1);
+  async getByStatus(status: string): Promise<ApiResponse<Reservation[]>> {
+    try {
+      return await api.get<Reservation[]>(`/api/reservations/status/${status}`);
+    } catch (error) {
+      console.error(`Error fetching ${status} reservations:`, error);
+      return {
+        success: false,
+        data: [],
+        message: error instanceof Error ? error.message : `Failed to fetch ${status} reservations`,
+      };
     }
-    
-    return {
-      success: true,
-      data: calendarData
-    };
-    
-    // Real implementation would be:
-    // return await apiRequest<any>({
-    //   url: ENDPOINTS.CALENDAR,
-    //   method: 'GET',
-    //   params: {
-    //     startDate: startDate.toISOString(),
-    //     endDate: endDate.toISOString(),
-    //   },
-    // });
-  }
+  },
+
+  /**
+   * Get reservations for a date range
+   * @param startDate The start date
+   * @param endDate The end date
+   * @returns Promise with array of reservations
+   */
+  async getByDateRange(startDate: string, endDate: string): Promise<ApiResponse<Reservation[]>> {
+    try {
+      return await api.get<Reservation[]>('/api/reservations/date-range', {
+        startDate,
+        endDate,
+      });
+    } catch (error) {
+      console.error('Error fetching reservations by date range:', error);
+      return {
+        success: false,
+        data: [],
+        message: error instanceof Error ? error.message : 'Failed to fetch reservations by date range',
+      };
+    }
+  },
 
   /**
    * Create a new reservation
+   * @param data The reservation data
+   * @returns Promise with the created reservation
    */
-  async create(reservation: InsertReservation): Promise<ApiResponse<Reservation>> {
-    // Real implementation would be:
-    return await apiRequest<Reservation>({
-      url: ENDPOINTS.BASE,
-      method: 'POST',
-      data: reservation,
-    });
-  }
+  async create(data: InsertReservation): Promise<ApiResponse<Reservation>> {
+    try {
+      // For development, mock API call with data
+      // This would be replaced with the actual API call in production
+      
+      // Simulate API call
+      console.log('Creating reservation:', data);
+      
+      // Mock a successful response
+      const mockResponse: Reservation = {
+        id: Math.floor(Math.random() * 10000) + 1,
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
+      return {
+        success: true,
+        data: mockResponse,
+        message: 'Reservation created successfully',
+      };
+      
+      // Uncomment for actual API implementation:
+      // return await api.post<Reservation>('/api/reservations', data);
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      return {
+        success: false,
+        data: {} as Reservation,
+        message: error instanceof Error ? error.message : 'Failed to create reservation',
+      };
+    }
+  },
 
   /**
    * Update a reservation
+   * @param id The reservation ID
+   * @param data The updated reservation data
+   * @returns Promise with the updated reservation
    */
-  async update(id: number, reservation: Partial<Reservation>): Promise<ApiResponse<Reservation>> {
-    // Real implementation would be:
-    return await apiRequest<Reservation>({
-      url: ENDPOINTS.DETAIL(id),
-      method: 'PATCH',
-      data: reservation,
-    });
-  }
+  async update(id: number, data: Partial<InsertReservation>): Promise<ApiResponse<Reservation>> {
+    try {
+      return await api.patch<Reservation>(`/api/reservations/${id}`, data);
+    } catch (error) {
+      console.error(`Error updating reservation ${id}:`, error);
+      return {
+        success: false,
+        data: {} as Reservation,
+        message: error instanceof Error ? error.message : `Failed to update reservation ${id}`,
+      };
+    }
+  },
 
   /**
    * Delete a reservation
+   * @param id The reservation ID
+   * @returns Promise with success/failure status
    */
   async delete(id: number): Promise<ApiResponse<void>> {
-    // Real implementation would be:
-    return await apiRequest<void>({
-      url: ENDPOINTS.DETAIL(id),
-      method: 'DELETE',
-    });
-  }
+    try {
+      return await api.delete<void>(`/api/reservations/${id}`);
+    } catch (error) {
+      console.error(`Error deleting reservation ${id}:`, error);
+      return {
+        success: false,
+        data: undefined as unknown as void,
+        message: error instanceof Error ? error.message : `Failed to delete reservation ${id}`,
+      };
+    }
+  },
 
   /**
-   * Check in a guest for their reservation
+   * Update reservation status
+   * @param id The reservation ID
+   * @param status The new status
+   * @returns Promise with the updated reservation
    */
-  async checkIn(id: number, checkInData?: any): Promise<ApiResponse<Reservation>> {
-    // Real implementation would be:
-    return await apiRequest<Reservation>({
-      url: ENDPOINTS.CHECKIN(id),
-      method: 'POST',
-      data: checkInData || {},
-    });
-  }
-
-  /**
-   * Check out a guest from their reservation
-   */
-  async checkOut(id: number, checkOutData?: any): Promise<ApiResponse<Reservation>> {
-    // Real implementation would be:
-    return await apiRequest<Reservation>({
-      url: ENDPOINTS.CHECKOUT(id),
-      method: 'POST',
-      data: checkOutData || {},
-    });
-  }
-
-  /**
-   * Cancel a reservation
-   */
-  async cancel(id: number, cancellationData?: any): Promise<ApiResponse<Reservation>> {
-    // Real implementation would be:
-    return await apiRequest<Reservation>({
-      url: ENDPOINTS.CANCEL(id),
-      method: 'POST',
-      data: cancellationData || {},
-    });
-  }
+  async updateStatus(id: number, status: string): Promise<ApiResponse<Reservation>> {
+    try {
+      return await api.patch<Reservation>(`/api/reservations/${id}/status`, { status });
+    } catch (error) {
+      console.error(`Error updating reservation ${id} status:`, error);
+      return {
+        success: false,
+        data: {} as Reservation,
+        message: error instanceof Error ? error.message : `Failed to update reservation ${id} status`,
+      };
+    }
+  },
 
   /**
    * Get reservation statistics
+   * @returns Promise with reservation stats
    */
-  async getStats(
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<ApiResponse<any>> {
-    // Mock implementation
-    return {
-      success: true,
-      data: {
-        totalReservations: 124,
-        checkIns: 42,
-        checkOuts: 38,
-        cancelations: 5,
-        occupancyRate: 78.5,
-        averageStayLength: 3.2,
-        revenueGenerated: 15250,
-        popularRoomTypes: [
-          { type: 'Deluxe', count: 45, percentage: 36.3 },
-          { type: 'Standard', count: 38, percentage: 30.6 },
-          { type: 'Suite', count: 28, percentage: 22.6 },
-          { type: 'Family', count: 13, percentage: 10.5 },
-        ],
-        reservationsByStatus: {
-          confirmed: 82,
-          pending: 24,
-          completed: 65,
-          cancelled: 12,
-        }
-      }
-    };
-    
-    // Real implementation would be:
-    // const params: Record<string, string> = {};
-    // 
-    // if (startDate) {
-    //   params.startDate = startDate.toISOString();
-    // }
-    // 
-    // if (endDate) {
-    //   params.endDate = endDate.toISOString();
-    // }
-    // 
-    // return await apiRequest<any>({
-    //   url: ENDPOINTS.STATS,
-    //   method: 'GET',
-    //   params,
-    // });
-  }
-}
+  async getStats(): Promise<ApiResponse<any>> {
+    try {
+      return await api.get<any>('/api/reservations/stats');
+    } catch (error) {
+      console.error('Error fetching reservation stats:', error);
+      return {
+        success: false,
+        data: {},
+        message: error instanceof Error ? error.message : 'Failed to fetch reservation stats',
+      };
+    }
+  },
+};
 
-// Export a singleton instance
-export const reservationService = new ReservationService();
+export default reservationService;

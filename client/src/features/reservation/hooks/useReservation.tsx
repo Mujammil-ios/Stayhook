@@ -1,139 +1,118 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'wouter';
-import { Reservation, InsertReservation } from '../../../types';
-import { reservationService, invoiceService } from '../../../shared/services';
-import { useToast } from '../../../hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { Reservation } from '@/types';
 
 export interface ReservationFormData {
-  // Customer details
   customerName: string;
   aadharNo: string;
-  aadharImage?: File;
   mobileNo: string;
   vehicleNo?: string;
-  
-  // Dates
   checkInDate: Date;
   checkOutDate: Date;
-  
-  // Travel details
   travellingFrom: string;
   travellingTo: string;
-  
-  // Guest counts
   maleCount: number;
   femaleCount: number;
   childCount: number;
-  
-  // Additional details
-  customerPhoto?: File;
   address: string;
   nationality: string;
-  
-  // Room details
   roomId: number;
   roomType: string;
   roomRate: number;
-  
-  // Additional guests
-  additionalGuests: {
+  additionalGuests?: Array<{
     name: string;
     idNumber: string;
     mobileNo: string;
-  }[];
+  }>;
+  aadharImage?: File;
+  customerPhoto?: File;
+  email?: string;
 }
 
 export function useReservation() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdReservation, setCreatedReservation] = useState<Reservation | null>(null);
-  const [step, setStep] = useState<'reservation' | 'invoice'>('reservation');
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const { toast } = useToast();
 
-  const createReservation = async (formData: ReservationFormData) => {
+  // Function to create a new reservation
+  const createReservation = async (formData: ReservationFormData): Promise<boolean> => {
     setIsSubmitting(true);
-
+    
     try {
-      // Format data for API
-      const reservationData: InsertReservation = {
-        roomId: formData.roomId,
-        guestId: 0, // This would be generated on the backend or should be provided if the guest exists
+      // In a real application, this would be an API call
+      // For demo purposes, we create a mock reservation object
+      const newReservation: Reservation = {
+        id: Math.floor(Math.random() * 10000),
+        customerName: formData.customerName,
+        aadharNo: formData.aadharNo,
+        mobileNo: formData.mobileNo,
+        vehicleNo: formData.vehicleNo || '',
         checkInDate: formData.checkInDate,
         checkOutDate: formData.checkOutDate,
+        travellingFrom: formData.travellingFrom,
+        travellingTo: formData.travellingTo,
+        maleCount: formData.maleCount,
+        femaleCount: formData.femaleCount,
+        childCount: formData.childCount,
+        address: formData.address,
+        nationality: formData.nationality,
+        roomId: formData.roomId,
+        roomType: formData.roomType,
+        roomRate: formData.roomRate,
+        email: formData.email || '',
         status: 'confirmed',
-        totalAmount: calculateTotalAmount(formData),
-        paymentStatus: 'pending',
-        specialRequests: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      // Create the reservation
-      const response = await reservationService.create(reservationData);
+      // Mock API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (response.success && response.data) {
-        // Store the created reservation
-        setCreatedReservation(response.data);
-        
-        // Navigate to invoice step
-        setStep('invoice');
-        
-        // Invalidate queries to refresh data
-        queryClient.invalidateQueries({ queryKey: ['/api/reservations'] });
-        
-        toast({
-          title: 'Reservation created',
-          description: `Reservation #${response.data.id} has been created successfully.`,
-        });
-        
-        return response.data;
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Failed to create reservation',
-          description: response.message || 'An error occurred while creating the reservation.',
-        });
-        return null;
-      }
+      // Store the created reservation in state
+      setCreatedReservation(newReservation);
+      
+      // Show success toast
+      toast({
+        title: 'Reservation Created',
+        description: `Reservation for ${formData.customerName} has been created successfully.`,
+        variant: 'default',
+      });
+      
+      // Open the invoice modal
+      setIsInvoiceModalOpen(true);
+      
+      return true;
     } catch (error) {
       console.error('Error creating reservation:', error);
       toast({
-        variant: 'destructive',
         title: 'Error',
-        description: 'An unexpected error occurred while creating the reservation.',
+        description: 'Failed to create reservation. Please try again.',
+        variant: 'destructive',
       });
-      return null;
+      return false;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Calculate total amount based on room rate and length of stay
-  const calculateTotalAmount = (formData: ReservationFormData): number => {
-    const checkInDate = new Date(formData.checkInDate);
-    const checkOutDate = new Date(formData.checkOutDate);
-    
-    // Calculate the difference in days
-    const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    
-    // Calculate total amount (room rate per night * number of nights)
-    return formData.roomRate * (daysDiff || 1); // Ensure at least 1 day
+  // Function to close the invoice modal
+  const closeInvoiceModal = () => {
+    setIsInvoiceModalOpen(false);
   };
 
-  // Reset the form and navigate back to reservations list
+  // Function to reset the form and state
   const resetForm = () => {
     setCreatedReservation(null);
-    setStep('reservation');
-    navigate('/reservations');
+    setIsInvoiceModalOpen(false);
   };
 
   return {
     isSubmitting,
     createdReservation,
-    step,
+    isInvoiceModalOpen,
     createReservation,
-    calculateTotalAmount,
+    closeInvoiceModal,
     resetForm,
   };
 }

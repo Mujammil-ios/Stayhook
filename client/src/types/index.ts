@@ -1,143 +1,172 @@
-/**
- * Core application types
- * 
- * This file contains application-wide type definitions
- */
+// Importing types from shared schema
+import {
+  Property as PropertySchema,
+  InsertProperty as InsertPropertySchema,
+  Room as RoomSchema,
+  InsertRoom as InsertRoomSchema,
+  Guest as GuestSchema,
+  InsertGuest as InsertGuestSchema,
+  Reservation as ReservationSchema,
+  InsertReservation as InsertReservationSchema,
+  Staff as StaffSchema,
+  InsertStaff as InsertStaffSchema,
+  User as UserSchema,
+  InsertUser as InsertUserSchema,
+  Finance as FinanceSchema,
+  InsertFinance as InsertFinanceSchema,
+} from '@/shared/schema';
 
-// Room related types
-export interface Room {
+// Re-export the types
+export type Property = PropertySchema;
+export type InsertProperty = InsertPropertySchema;
+
+export type Room = RoomSchema;
+export type InsertRoom = InsertRoomSchema;
+
+export type Guest = GuestSchema;
+export type InsertGuest = InsertGuestSchema;
+
+export type Reservation = ReservationSchema;
+export type InsertReservation = InsertReservationSchema;
+
+export type Staff = StaffSchema;
+export type InsertStaff = InsertStaffSchema;
+
+export type User = UserSchema;
+export type InsertUser = InsertUserSchema;
+
+export type Finance = FinanceSchema;
+export type InsertFinance = InsertFinanceSchema;
+
+// Generic API response type
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  status?: number;
+}
+
+// Options for API requests
+export interface ApiOptions {
+  url: string;
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  data?: any;
+  params?: Record<string, string>;
+  headers?: Record<string, string>;
+}
+
+// Booking-related types
+export interface Booking {
   id: number;
-  propertyId: number;
-  number: string;
-  floor: number;
-  name: string;
   status: string;
-  roomType: string;
-  capacity: number;
-  pricePerNight: number;
-  description: string;
-  amenities: string[];
-  images: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface InsertRoom {
-  propertyId: number;
-  number: string;
-  floor: number;
-  name: string;
-  roomType: string;
-  capacity: number;
-  pricePerNight: number;
-  description: string;
-  amenities: string[];
-  images: string[];
-}
-
-// Reservation related types
-export interface Reservation {
-  id: number;
   roomId: number;
-  guestId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  guestIds: unknown;
+  specialRequests: unknown;
+  paymentDetails: unknown;
+  timeline: unknown;
+  linkedBookings: unknown;
+  createdAt: Date | null;
+}
+
+export interface BookingStats {
+  total: number;
+  confirmed: number;
+  pending: number;
+  cancelled: number;
+  checkedIn: number;
+  noShows: number;
+  revenue: {
+    total: number;
+    average: number;
+    thisMonth: number;
+    lastMonth: number;
+  };
+}
+
+// Invoice-related types
+export interface Invoice {
+  id: number;
+  reservationId: number;
+  invoiceNumber: string;
+  customerName: string;
+  customerDetails: {
+    email: string;
+    phone: string;
+    address?: string;
+  };
+  roomDetails: {
+    roomNumber: string;
+    roomType: string;
+    rate: number;
+  };
   checkInDate: Date;
   checkOutDate: Date;
-  status: string;
+  subTotal: number;
+  taxDetails: {
+    gst: number;
+    serviceCharge?: number;
+  };
   totalAmount: number;
-  paymentStatus: string;
-  specialRequests?: string;
+  amountPaid: number;
+  paymentStatus: 'paid' | 'partial' | 'unpaid';
+  paymentMethod?: string;
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface InsertReservation {
-  roomId: number;
-  guestId: number;
+export interface InsertInvoice {
+  reservationId: number;
+  customerName: string;
+  customerDetails: {
+    email: string;
+    phone: string;
+    address?: string;
+  };
+  roomDetails: {
+    roomNumber: string;
+    roomType: string;
+    rate: number;
+  };
   checkInDate: Date;
   checkOutDate: Date;
-  status: string;
+  subTotal: number;
+  taxDetails: {
+    gst: number;
+    serviceCharge?: number;
+  };
   totalAmount: number;
-  paymentStatus: string;
-  specialRequests?: string;
+  amountPaid: number;
+  paymentStatus: 'paid' | 'partial' | 'unpaid';
+  paymentMethod?: string;
+  notes?: string;
 }
 
-// Guest related types
-export interface Guest {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address?: string;
-  idType?: string;
-  idNumber?: string;
-  nationality?: string;
-  createdAt: Date;
-  updatedAt: Date;
+// Extended types for more detailed information
+export interface DetailedRoom extends Room {
+  currentGuests?: Guest[];
+  occupancyHistory?: {
+    date: string;
+    isOccupied: boolean;
+  }[];
+  maintenanceHistory?: {
+    date: string;
+    description: string;
+    cost: number;
+  }[];
 }
 
-export interface InsertGuest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address?: string;
-  idType?: string;
-  idNumber?: string;
-  nationality?: string;
+export interface DetailedReservation extends Reservation {
+  guest?: Guest;
+  room?: Room;
+  invoices?: Invoice[];
 }
 
-// User related types
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: 'admin' | 'manager' | 'staff' | 'guest';
-  staffId?: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface InsertUser {
-  name: string;
-  email: string;
-  password: string; // Note: This should be hashed before insertion
-  role: 'admin' | 'manager' | 'staff' | 'guest';
-  staffId?: number;
-}
-
-// Property related types
-export interface Property {
-  id: number;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
-  phone: string;
-  email: string;
-  website?: string;
-  description: string;
-  type: string;
-  amenities: string[];
-  images: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface InsertProperty {
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
-  phone: string;
-  email: string;
-  website?: string;
-  description: string;
-  type: string;
-  amenities: string[];
-  images: string[];
+export interface DetailedGuest extends Guest {
+  reservations?: Reservation[];
+  totalSpent?: number;
+  stayCount?: number;
+  lastStay?: Date;
 }

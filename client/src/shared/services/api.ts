@@ -1,99 +1,172 @@
+import { ApiOptions, ApiResponse } from '@/types';
+
 /**
- * API Service
- * 
- * Core service for handling API communication.
+ * Base API service for making HTTP requests
  */
-
-import { queryClient } from '@/lib/queryClient';
-
-interface ApiOptions {
-  url: string;
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  data?: any;
-  params?: Record<string, string>;
-  headers?: HeadersInit;
-}
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  status?: number;
-}
-
-// Function to handle API requests
-const apiRequest = async <T>({
-  url,
-  method,
-  data,
-  params,
-  headers = {},
-}: ApiOptions): Promise<ApiResponse<T>> => {
-  try {
-    // Build request URL with query parameters
-    const queryParams = params
-      ? `?${new URLSearchParams(params).toString()}`
-      : '';
-    
-    const fullUrl = `${url}${queryParams}`;
-    
-    // Default headers
-    const defaultHeaders = {
-      'Content-Type': 'application/json',
-    };
-    
-    // Prepare request options
-    const options: RequestInit = {
-      method,
-      headers: {
-        ...defaultHeaders,
-        ...headers,
-      },
-    };
-    
-    // Add body if it's not a GET request
-    if (method !== 'GET' && data) {
-      options.body = JSON.stringify(data);
-    }
-    
-    // Make the request
-    const response = await fetch(fullUrl, options);
-    
-    // Parse response
-    let responseData: any;
-    
+const api = {
+  /**
+   * Make a HTTP request with the provided options
+   * @param options The request options
+   * @returns A Promise resolving to the API response
+   */
+  async request<T>({
+    url,
+    method,
+    data,
+    params,
+    headers,
+  }: ApiOptions): Promise<ApiResponse<T>> {
     try {
-      responseData = await response.json();
+      // Build request options
+      const options: RequestInit = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+      };
+
+      // Add body if data is provided and method is not GET
+      if (data && method !== 'GET') {
+        options.body = JSON.stringify(data);
+      }
+
+      // Add query params if provided
+      let fullUrl = url;
+      if (params) {
+        const queryParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          queryParams.append(key, value);
+        });
+        fullUrl = `${url}?${queryParams.toString()}`;
+      }
+
+      // Make the request
+      const response = await fetch(fullUrl, options);
+      
+      // Parse response as JSON
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (error) {
+        // Handle case where response is not JSON
+        responseData = { message: 'Invalid response format' };
+      }
+
+      // Check if the request was successful
+      if (response.ok) {
+        return {
+          success: true,
+          data: responseData as T,
+          status: response.status,
+          message: responseData.message || 'Success',
+        };
+      } else {
+        // Handle error response
+        return {
+          success: false,
+          data: null as unknown as T,
+          status: response.status,
+          message: responseData.message || `Error: ${response.status} ${response.statusText}`,
+        };
+      }
     } catch (error) {
-      responseData = {};
+      // Handle network errors or other exceptions
+      console.error('API request failed:', error);
+      return {
+        success: false,
+        data: null as unknown as T,
+        message: error instanceof Error ? error.message : 'Unknown error occurred',
+      };
     }
-    
-    // Handle response
-    if (!response.ok) {
-      throw new Error(responseData.message || 'Something went wrong');
+  },
+
+  // Convenience methods for different HTTP verbs
+  async get<T>(url: string, params?: Record<string, string>, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    return this.request<T>({
+      url,
+      method: 'GET',
+      params,
+      headers,
+    });
+  },
+
+  async post<T>(url: string, data?: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    return this.request<T>({
+      url,
+      method: 'POST',
+      data,
+      headers,
+    });
+  },
+
+  async put<T>(url: string, data?: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    return this.request<T>({
+      url,
+      method: 'PUT',
+      data,
+      headers,
+    });
+  },
+
+  async patch<T>(url: string, data?: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    return this.request<T>({
+      url,
+      method: 'PATCH',
+      data,
+      headers,
+    });
+  },
+
+  async delete<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    return this.request<T>({
+      url,
+      method: 'DELETE',
+      headers,
+    });
+  },
+
+  // Utility method for form data uploads
+  async uploadFormData<T>(url: string, formData: FormData, method: 'POST' | 'PUT' | 'PATCH' = 'POST'): Promise<ApiResponse<T>> {
+    try {
+      const options: RequestInit = {
+        method,
+        body: formData,
+      };
+
+      const response = await fetch(url, options);
+      
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch {
+        responseData = { message: 'Invalid response format' };
+      }
+
+      if (response.ok) {
+        return {
+          success: true,
+          data: responseData as T,
+          status: response.status,
+          message: responseData.message || 'Success',
+        };
+      } else {
+        return {
+          success: false,
+          data: null as unknown as T,
+          status: response.status,
+          message: responseData.message || `Error: ${response.status} ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('API upload failed:', error);
+      return {
+        success: false,
+        data: null as unknown as T,
+        message: error instanceof Error ? error.message : 'Unknown error occurred',
+      };
     }
-    
-    // Return successful response
-    return {
-      success: true,
-      data: responseData,
-      status: response.status,
-    };
-  } catch (error: any) {
-    // Log error
-    console.error(`API error for ${method} ${url}:`, error);
-    
-    // Return error response
-    return {
-      success: false,
-      message: error.message || 'An error occurred',
-    };
-  }
+  },
 };
 
-// Re-export the apiRequest function
-export { apiRequest };
-
-// Also create and export an API object with the apiRequest method
-const api = { request: apiRequest };
 export default api;

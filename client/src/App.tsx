@@ -20,7 +20,7 @@ import Onboarding from "@/pages/onboarding";
 import { ThemeProvider } from "@/hooks/useThemeContext";
 import { AuthProvider, useAuth } from "@/hooks/useAuthContext";
 import { OnboardingProvider } from "@/features/onboarding/hooks/useOnboarding";
-import CreateReservation from "@/features/reservation/components/CreateReservation";
+import { CreateReservation } from "@/features/reservation/components/CreateReservation";
 
 // Import auth pages
 import Login from "@/pages/auth/login";
@@ -110,6 +110,7 @@ function Routes() {
           <Route path="/rooms" component={Rooms} />
           <Route path="/bookings" component={Bookings} />
           <Route path="/reservations" component={Reservations} />
+          <Route path="/reservations/create" component={CreateReservation} />
           <Route path="/staff" component={Staff} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
