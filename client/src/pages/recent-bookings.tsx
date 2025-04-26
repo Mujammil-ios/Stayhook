@@ -53,9 +53,30 @@ const BookingModel = {
     // Simulate API call with a delay
     return new Promise((resolve) => {
       setTimeout(() => {
-        const bookings = getRecentReservations(limit);
-        console.log(`[BookingModel] Successfully fetched ${bookings.length} recent bookings`);
-        resolve(bookings);
+        // Get raw data from getRecentReservations
+        const rawBookings = getRecentReservations(limit);
+        console.log(`[BookingModel] Successfully fetched ${rawBookings.length} recent bookings`);
+        
+        // Ensure we transform and validate the data shape to match our Reservation type
+        // This step is crucial for type safety and handling potentially malformed data
+        const validatedBookings: Reservation[] = rawBookings.map(booking => {
+          // Force cast the booking to 'any' type to bypass TypeScript checking
+          // then extract only the fields we need with proper type checking
+          const rawBooking = booking as any;
+          
+          return {
+            id: typeof rawBooking.id === 'number' ? rawBooking.id : 0,
+            roomId: typeof rawBooking.roomId === 'number' ? rawBooking.roomId : 0,
+            checkInDate: rawBooking.checkInDate || new Date(),
+            checkOutDate: rawBooking.checkOutDate || new Date(),
+            status: typeof rawBooking.status === 'string' ? rawBooking.status : 'unknown',
+            guestIds: Array.isArray(rawBooking.guestIds) ? rawBooking.guestIds : [],
+            amount: typeof rawBooking.amount === 'number' ? rawBooking.amount : 0,
+            createdAt: rawBooking.createdAt || null
+          };
+        });
+        
+        resolve(validatedBookings);
       }, 500);
     });
   }
