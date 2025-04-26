@@ -14,6 +14,7 @@ import Staff from "@/pages/staff";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import Help from "@/pages/help";
+import FormsDemo from "@/pages/forms-demo";
 import { ThemeProvider } from "next-themes";
 
 function Router() {
