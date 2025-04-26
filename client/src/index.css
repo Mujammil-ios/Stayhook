@@ -1,45 +1,23 @@
+/**
+ * HotelHub Management System Styles
+ * 
+ * This file contains global styles, theme variables, and utility classes
+ * for consistent styling across the application.
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.animate-slideUp {
-  animation: slideUp 0.3s ease-out;
-}
-
-.animate-shake {
-  animation: shake 0.3s ease-in-out;
-}
-
-.animate-scaleIn {
-  animation: scaleIn 0.3s ease-out;
-}
-
+/**
+ * Theme Variables
+ * The application uses HSL color format for better dark mode support
+ * and more flexibility with opacity adjustments
+ *
+ * Each color has its full palette of shades for consistent design
+ */
 :root {
+  /* Base UI Colors */
   --background: 0 0% 100%;
   --foreground: 20 14.3% 4.1%;
   --muted: 60 4.8% 95.9%;
@@ -50,21 +28,120 @@
   --card-foreground: 20 14.3% 4.1%;
   --border: 20 5.9% 90%;
   --input: 20 5.9% 90%;
+  
+  /* Primary Brand Colors - Blue */
   --primary: 239 84% 67%;
   --primary-foreground: 211 100% 99%;
+  --primary-50: 239 84% 97%;
+  --primary-100: 239 84% 92%;
+  --primary-200: 239 84% 85%;
+  --primary-300: 239 84% 78%;
+  --primary-400: 239 84% 72%;
+  --primary-500: 239 84% 67%; /* Base primary */
+  --primary-600: 239 84% 57%;
+  --primary-700: 239 84% 47%;
+  --primary-800: 239 84% 37%;
+  --primary-900: 239 84% 27%;
+  --primary-950: 239 84% 17%;
+  
+  /* Secondary Brand Colors - Green */
   --secondary: 160 84% 39%;
   --secondary-foreground: 24 9.8% 10%;
+  --secondary-50: 160 84% 95%;
+  --secondary-100: 160 84% 90%;
+  --secondary-200: 160 84% 80%;
+  --secondary-300: 160 84% 70%;
+  --secondary-400: 160 84% 50%;
+  --secondary-500: 160 84% 39%; /* Base secondary */
+  --secondary-600: 160 84% 32%;
+  --secondary-700: 160 84% 25%;
+  --secondary-800: 160 84% 20%;
+  --secondary-900: 160 84% 15%;
+  --secondary-950: 160 84% 10%;
+  
+  /* Accent Colors - Orange */
   --accent: 30 95% 50%;
   --accent-foreground: 24 9.8% 10%;
+  --accent-50: 30 95% 95%;
+  --accent-100: 30 95% 90%;
+  --accent-200: 30 95% 80%;
+  --accent-300: 30 95% 70%;
+  --accent-400: 30 95% 60%;
+  --accent-500: 30 95% 50%; /* Base accent */
+  --accent-600: 30 95% 40%;
+  --accent-700: 30 95% 35%;
+  --accent-800: 30 95% 30%;
+  --accent-900: 30 95% 25%;
+  --accent-950: 30 95% 20%;
+  
+  /* Feedback Colors */
+  --success: 142 76% 36%;
+  --success-foreground: 60 9.1% 97.8%;
+  --success-50: 142 76% 95%;
+  --success-100: 142 76% 90%;
+  --success-200: 142 76% 80%;
+  --success-300: 142 76% 65%;
+  --success-400: 142 76% 50%;
+  --success-500: 142 76% 36%; /* Base success */
+  --success-600: 142 76% 30%;
+  --success-700: 142 76% 25%;
+  --success-800: 142 76% 20%;
+  --success-900: 142 76% 15%;
+  
+  --warning: 38 92% 50%;
+  --warning-foreground: 24 9.8% 10%;
+  --warning-50: 38 92% 95%;
+  --warning-100: 38 92% 90%;
+  --warning-200: 38 92% 80%;
+  --warning-300: 38 92% 70%;
+  --warning-400: 38 92% 60%;
+  --warning-500: 38 92% 50%; /* Base warning */
+  --warning-600: 38 92% 40%;
+  --warning-700: 38 92% 30%;
+  --warning-800: 38 92% 25%;
+  --warning-900: 38 92% 20%;
+  
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 60 9.1% 97.8%;
+  --destructive-50: 0 84.2% 95%;
+  --destructive-100: 0 84.2% 90%;
+  --destructive-200: 0 84.2% 80%;
+  --destructive-300: 0 84.2% 70%;
+  --destructive-400: 0 84.2% 65%;
+  --destructive-500: 0 84.2% 60.2%; /* Base destructive */
+  --destructive-600: 0 84.2% 50%;
+  --destructive-700: 0 84.2% 40%;
+  --destructive-800: 0 84.2% 30%;
+  --destructive-900: 0 84.2% 20%;
+  
+  --info: 210 100% 66%;
+  --info-foreground: 210 40% 98%;
+  --info-50: 210 100% 95%;
+  --info-100: 210 100% 90%;
+  --info-200: 210 100% 85%;
+  --info-300: 210 100% 80%;
+  --info-400: 210 100% 73%;
+  --info-500: 210 100% 66%; /* Base info */
+  --info-600: 210 100% 56%;
+  --info-700: 210 100% 46%;
+  --info-800: 210 100% 36%;
+  --info-900: 210 100% 26%;
+  
+  /* UI Element Colors */
   --ring: 20 14.3% 4.1%;
   --radius: 0.5rem;
-  --chart-1: 239 84% 67%;
-  --chart-2: 160 84% 39%;
-  --chart-3: 30 95% 50%;
-  --chart-4: 354 70% 54%;
-  --chart-5: 262 83% 58%;
+  
+  /* Chart Colors */
+  --chart-1: 239 84% 67%; /* primary */
+  --chart-2: 160 84% 39%; /* secondary */
+  --chart-3: 30 95% 50%;  /* accent */
+  --chart-4: 354 70% 54%; /* red */
+  --chart-5: 262 83% 58%; /* purple */
+  --chart-6: 210 100% 66%; /* info/blue */
+  --chart-7: 142 76% 36%; /* success/green */
+  --chart-8: 38 92% 50%;  /* warning/yellow */
+  
+  /* Layout Specific Colors */
   --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 20 14.3% 4.1%;
   --sidebar-primary: 239 84% 67%;
@@ -73,9 +150,22 @@
   --sidebar-accent-foreground: 24 9.8% 10%;
   --sidebar-border: 20 5.9% 90%;
   --sidebar-ring: 20 14.3% 4.1%;
+  
+  /* UI Element Sizes */
+  --header-height: 64px;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
   --scrollbar-width: 5px;
+  --z-header: 50;
+  --z-sidebar: 40;
+  --z-dropdown: 30;
+  --z-modal: 100;
 }
 
+/**
+ * Dark Mode Theme Variables
+ * Overrides the light theme colors for dark mode
+ */
 .dark {
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
@@ -87,21 +177,45 @@
   --card-foreground: 0 0% 98%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
+  
+  /* Primary remains mostly the same to maintain brand identity */
   --primary: 239 84% 67%;
   --primary-foreground: 211 100% 99%;
+  --primary-50: 239 84% 17%;
+  --primary-100: 239 84% 27%;
+  --primary-200: 239 84% 37%;
+  --primary-300: 239 84% 47%;
+  --primary-400: 239 84% 55%;
+  --primary-500: 239 84% 67%;
+  --primary-600: 239 84% 72%;
+  --primary-700: 239 84% 78%;
+  --primary-800: 239 84% 85%;
+  --primary-900: 239 84% 92%;
+  --primary-950: 239 84% 97%;
+  
+  /* Secondary adjustments for dark mode */
   --secondary: 160 84% 39%;
   --secondary-foreground: 0 0% 98%;
+  
+  /* Accent adjustments for dark mode */
   --accent: 30 95% 50%;
   --accent-foreground: 0 0% 98%;
+  
+  /* Feedback colors for dark mode */
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
+  
+  /* UI adjustments */
   --ring: 240 4.9% 83.9%;
-  --radius: 0.5rem;
+  
+  /* Chart colors remain the same for consistency */
   --chart-1: 239 84% 67%;
   --chart-2: 160 84% 39%;
   --chart-3: 30 95% 50%;
   --chart-4: 354 70% 54%;
   --chart-5: 262 83% 58%;
+  
+  /* Sidebar dark mode colors */
   --sidebar-background: 240 10% 8%;
   --sidebar-foreground: 0 0% 98%;
   --sidebar-primary: 239 84% 67%;
