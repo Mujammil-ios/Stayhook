@@ -1,0 +1,59 @@
+I need you to implement several critical improvements to our hotel management system:
+
+1. FIX THE SETTINGS PAGE ERROR:
+   The Badge component is not defined on line 408 in settings.tsx. Properly import the Badge component or create one if it doesn't exist. The complete error is:
+[plugin] Badge is not defined
+/home/runner/workspace/client/src/pages/settings.tsx:408:26
+
+2. IMPLEMENT FORMS WITHIN THEIR CORRESPONDING FEATURES (not as a separate demo page):
+
+A. Room Management Form:
+- Add "Add New Room" button in the Room Management section
+- Clicking this button should open a modal with the room form
+- The form should include: room number, type, floor, capacity, pricing, amenities
+- On submit, log the form values to console and show success message
+
+B. Guest/Customer Form:
+- Add "Add New Guest" button in the Reservation/Guests section
+- Clicking this button should open a modal with guest registration form
+- Include all fields: name, ID proof upload, mobile, vehicle, dates, etc.
+- On submit, log the form values to console and show success message
+
+C. Booking Form:
+- Add "New Booking" button in the Bookings/Reservation section
+- Clicking opens a modal with the booking form
+- Include guest selection, room selection, dates, pricing fields
+- On submit, log the form values and show success message
+
+D. Staff Form:
+- Add "Add Staff" button in Staff Management section
+- Clicking opens modal with staff details form
+- Include name, ID, role, salary, joining date fields
+- On submit, log values and show success message
+
+3. CREATE THESE NEW PAGES:
+
+A. Policy Pages:
+- Create Privacy Policy page with standard privacy policy text
+- Create Terms and Conditions page with standard terms text
+- Create Customer Support page with contact form and FAQ sections
+- Add links to these pages in the footer and settings
+
+B. Detail View Pages:
+- Create "All Room Types" page showing detailed room listing with filters
+- Create "All Notifications" page showing all system notifications with filters
+- Create "All Recent Bookings" page with complete booking list and search
+- Add "View All" buttons in dashboard that link to these pages
+
+4. IMPLEMENTATION REQUIREMENTS:
+- Use the existing project structure and component patterns
+- Maintain consistent styling across all new components
+- Ensure all forms use the same validation approach
+- Make sure all pages are responsive
+- Add proper navigation between pages
+- Log form submissions to console with clear labels
+- Show success/error states for all user actions
+
+Please provide complete implementation code for each component. Use the existing project structure and don't create separate demo pages. Each form should be integrated directly into its respective feature section and triggered by appropriately placed buttons.
+
+Start by fixing the Badge component issue in settings.tsx, then implement the forms in their proper locations, and finally create the new pages with navigation.
