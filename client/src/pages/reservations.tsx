@@ -239,6 +239,24 @@ const Reservations = () => {
           checkOutDate: selectedDates.to || addDays(selectedDates.from, 1)
         }}
       />
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => {
+          setIsBookingModalOpen(false);
+          // Reset the selected room when closing the modal
+          setSelectedRoom(null);
+        }}
+        initialData={{
+          guestId: selectedGuest,
+          roomId: selectedRoom?.toString() || "",
+          checkInDate: selectedDates.from,
+          checkOutDate: selectedDates.to || addDays(selectedDates.from, 1),
+          adults: "1",
+          children: "0"
+        }}
+      />
     </div>
   );
 };
