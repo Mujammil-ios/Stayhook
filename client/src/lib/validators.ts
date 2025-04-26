@@ -1,17 +1,12 @@
-// Form validation rules and utilities
+// Form validation utilities
 
-type ValidationRule = {
-  validate: (value: any, formData?: any) => boolean;
+export interface ValidationRule {
+  validate: (value: any, formData?: Record<string, any>) => boolean;
   message: string;
-};
+}
 
-export type FieldValidation = {
-  [key: string]: ValidationRule[];
-};
-
-export type ValidationErrors = {
-  [key: string]: string[];
-};
+export type FieldValidation = Record<string, ValidationRule[]>;
+export type ValidationErrors = Record<string, string[]>;
 
 // Basic validation rules
 export const Validators = {
@@ -76,11 +71,12 @@ export const Validators = {
   }),
   
   match: (field: string, message = "Fields do not match"): ValidationRule => ({
-    validate: (value: any, formData: any): boolean => value === formData[field],
+    validate: (value: any, formData?: Record<string, any>): boolean => 
+      formData ? value === formData[field] : false,
     message,
   }),
   
-  custom: (validatorFn: (value: any, formData?: any) => boolean, message: string): ValidationRule => ({
+  custom: (validatorFn: (value: any, formData?: Record<string, any>) => boolean, message: string): ValidationRule => ({
     validate: validatorFn,
     message,
   }),
@@ -97,7 +93,7 @@ export const Validators = {
 export function validateField(
   name: string,
   value: any,
-  formData: any,
+  formData: Record<string, any>,
   validations: FieldValidation
 ): string[] {
   if (!validations[name]) return [];
@@ -115,7 +111,7 @@ export function validateField(
 
 // Validate entire form
 export function validateForm(
-  formData: any,
+  formData: Record<string, any>,
   validations: FieldValidation
 ): ValidationErrors {
   const errors: ValidationErrors = {};

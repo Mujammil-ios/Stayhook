@@ -11,6 +11,7 @@ import StatCard from "@/components/dashboard/StatCard";
 import ChartBar from "@/components/dashboard/ChartBar";
 import OccupancyChart from "@/components/dashboard/OccupancyChart";
 import AlertItem from "@/components/dashboard/AlertItem";
+import { CreatePropertyModal } from "@/components/forms/property/CreatePropertyModal";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
   const [timeFilter, setTimeFilter] = useState("24h");
+  const [isCreatePropertyModalOpen, setIsCreatePropertyModalOpen] = useState(false);
   const recentBookings = getRecentReservations(3);
 
   const getStatusBadgeClasses = (status: string) => {
