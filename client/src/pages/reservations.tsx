@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { GuestModal } from "@/components/forms/guest/GuestModal";
+import { BookingModal } from "@/components/forms/booking/BookingModal";
 
 const Reservations = () => {
   const today = new Date();
@@ -30,6 +31,9 @@ const Reservations = () => {
   const [roomType, setRoomType] = useState("all");
   const [search, setSearch] = useState("");
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedGuest, setSelectedGuest] = useState("");
+  const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
   const { toast } = useToast();
   
   // Get unique room types
@@ -47,7 +51,10 @@ const Reservations = () => {
       <div className="mb-6 sm:flex sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Reservation System</h1>
         <div className="mt-3 sm:mt-0">
-          <Button>
+          <Button
+            onClick={() => setIsBookingModalOpen(true)}
+            disabled={!selectedGuest || !selectedRoom}
+          >
             <i className="ri-calendar-check-line mr-2"></i>
             Confirm Booking
           </Button>
@@ -134,7 +141,7 @@ const Reservations = () => {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Select Guest</label>
-                <Select>
+                <Select value={selectedGuest} onValueChange={setSelectedGuest}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select existing guest" />
                   </SelectTrigger>
@@ -197,8 +204,12 @@ const Reservations = () => {
                         <p className="text-sm text-neutral-500 mt-1">{room.category}</p>
                         <div className="mt-2 flex justify-between items-center">
                           <span className="font-bold">${room.baseRate}/night</span>
-                          <Button size="sm" variant="outline">
-                            Select
+                          <Button 
+                            size="sm" 
+                            variant={selectedRoom === room.id ? "default" : "outline"}
+                            onClick={() => setSelectedRoom(room.id)}
+                          >
+                            {selectedRoom === room.id ? "Selected" : "Select"}
                           </Button>
                         </div>
                       </div>

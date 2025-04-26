@@ -59,7 +59,7 @@ export function TextInput({
         <input
           ref={inputRef}
           id={id}
-          name={id}
+          name={name || id}
           type={type}
           value={value}
           onChange={onChange}
