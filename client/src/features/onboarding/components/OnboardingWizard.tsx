@@ -1,89 +1,233 @@
 /**
- * Onboarding Wizard
+ * Onboarding Wizard Component
  * 
- * Container component for the multi-step onboarding wizard.
+ * Main component for the onboarding flow
  */
 
 import { useEffect } from 'react';
-import { useNavigate, useLocation } from 'wouter';
-import { OnboardingProvider, useOnboarding } from '../hooks/useOnboarding';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { OnboardingProgress } from './OnboardingProgress';
+import { OnboardingStep } from '../types/index';
+import { useOnboarding } from '../hooks/useOnboarding';
 import { BusinessBasicsForm } from './BusinessBasicsForm';
 import { PropertyConfigForm } from './PropertyConfigForm';
 import { PoliciesForm } from './PoliciesForm';
 import { CompletedStep } from './CompletedStep';
-import { OnboardingProgress } from './OnboardingProgress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { APP_CONFIG } from '@/shared/config';
+import { Loader2 } from 'lucide-react';
+import { useNavigate } from 'wouter';
 
-// Wrapper component that uses the context
-const OnboardingWizardContent = () => {
-  const { currentStep, error } = useOnboarding();
-  const [, navigate] = useLocation();
+export function OnboardingWizard() {
+  const { 
+    formState,
+    loading,
+    goToStep,
+    isStepValid,
+    saveBusinessBasics,
+    savePropertyConfig,
+    savePolicies,
+    completeOnboarding
+  } = useOnboarding();
   
-  // Redirect to dashboard if onboarding is completed
+  const navigate = useNavigate();
+  
+  // Redirect to dashboard if onboarding is already completed
   useEffect(() => {
-    if (currentStep === 'completed') {
-      // Add a small delay to allow the completed step animation to be seen
-      const timer = setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
-      
-      return () => clearTimeout(timer);
+    if (formState.completed) {
+      navigate('/dashboard');
     }
-  }, [currentStep, navigate]);
+  }, [formState.completed, navigate]);
+  
+  // Determine if current step is completed
+  const stepsCompleted = {
+    [OnboardingStep.BUSINESS_BASICS]: isStepValid(OnboardingStep.BUSINESS_BASICS),
+    [OnboardingStep.PROPERTY_CONFIG]: isStepValid(OnboardingStep.PROPERTY_CONFIG),
+    [OnboardingStep.POLICIES]: isStepValid(OnboardingStep.POLICIES),
+  };
+  
+  // Handle next step navigation
+  const handleNext = async () => {
+    const currentStep = formState.currentStep;
+    
+    // Save current step data
+    let success = false;
+    
+    switch (currentStep) {
+      case OnboardingStep.BUSINESS_BASICS:
+        success = await saveBusinessBasics();
+        if (success) {
+          goToStep(OnboardingStep.PROPERTY_CONFIG);
+        }
+        break;
+        
+      case OnboardingStep.PROPERTY_CONFIG:
+        success = await savePropertyConfig();
+        if (success) {
+          goToStep(OnboardingStep.POLICIES);
+        }
+        break;
+        
+      case OnboardingStep.POLICIES:
+        success = await savePolicies();
+        if (success) {
+          goToStep(OnboardingStep.COMPLETED);
+        }
+        break;
+        
+      case OnboardingStep.COMPLETED:
+        success = await completeOnboarding();
+        if (success) {
+          navigate('/dashboard');
+        }
+        break;
+    }
+  };
+  
+  // Handle previous step navigation
+  const handlePrevious = () => {
+    const currentStep = formState.currentStep;
+    
+    switch (currentStep) {
+      case OnboardingStep.PROPERTY_CONFIG:
+        goToStep(OnboardingStep.BUSINESS_BASICS);
+        break;
+        
+      case OnboardingStep.POLICIES:
+        goToStep(OnboardingStep.PROPERTY_CONFIG);
+        break;
+        
+      case OnboardingStep.COMPLETED:
+        goToStep(OnboardingStep.POLICIES);
+        break;
+    }
+  };
+  
+  // Determine step content
+  const renderStepContent = () => {
+    switch (formState.currentStep) {
+      case OnboardingStep.BUSINESS_BASICS:
+        return <BusinessBasicsForm />;
+        
+      case OnboardingStep.PROPERTY_CONFIG:
+        return <PropertyConfigForm />;
+        
+      case OnboardingStep.POLICIES:
+        return <PoliciesForm />;
+        
+      case OnboardingStep.COMPLETED:
+        return <CompletedStep onFinish={handleNext} />;
+        
+      default:
+        return <div>Unknown step</div>;
+    }
+  };
+  
+  // Get step title and description
+  const getStepInfo = () => {
+    switch (formState.currentStep) {
+      case OnboardingStep.BUSINESS_BASICS:
+        return {
+          title: 'Business Basics',
+          description: 'Let\'s start with your property details and business information'
+        };
+        
+      case OnboardingStep.PROPERTY_CONFIG:
+        return {
+          title: 'Property Configuration',
+          description: 'Set up your property amenities, photos, and room types'
+        };
+        
+      case OnboardingStep.POLICIES:
+        return {
+          title: 'Policies',
+          description: 'Establish your property policies, rules, and guidelines'
+        };
+        
+      case OnboardingStep.COMPLETED:
+        return {
+          title: 'All Set!',
+          description: 'Review your setup before finishing the onboarding process'
+        };
+        
+      default:
+        return {
+          title: 'Onboarding',
+          description: 'Set up your property'
+        };
+    }
+  };
+  
+  const stepInfo = getStepInfo();
+  const canContinue = isStepValid(formState.currentStep);
+  const showPrevious = formState.currentStep !== OnboardingStep.BUSINESS_BASICS;
+  const isLastStep = formState.currentStep === OnboardingStep.COMPLETED;
+  
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
   
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-2">Set Up Your Property</h1>
-        <p className="text-muted-foreground">
-          Welcome to {APP_CONFIG.APP_NAME}! Let's set up your property to get you started.
-        </p>
+    <div className="container max-w-5xl py-8">
+      <div className="mb-12">
+        <OnboardingProgress 
+          currentStep={formState.currentStep} 
+          stepsCompleted={stepsCompleted}
+          onSelectStep={(step) => {
+            // Only allow navigation to completed steps or the current step
+            const stepIndex = Object.values(OnboardingStep).indexOf(step);
+            const currentStepIndex = Object.values(OnboardingStep).indexOf(formState.currentStep);
+            
+            if (stepIndex <= currentStepIndex) {
+              goToStep(step);
+            }
+          }}
+        />
       </div>
       
-      <OnboardingProgress />
-      
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      
-      <Card className="mb-6">
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>
-            {currentStep === 'business-basics' && 'Business & Property Basics'}
-            {currentStep === 'property-config' && 'Property Configuration'}
-            {currentStep === 'policies' && 'Policies & Launch'}
-            {currentStep === 'completed' && 'Setup Complete!'}
-          </CardTitle>
-          <CardDescription>
-            {currentStep === 'business-basics' && 'Provide basic information about your business and property.'}
-            {currentStep === 'property-config' && 'Configure your property amenities, photos, and room types.'}
-            {currentStep === 'policies' && 'Set up your policies and prepare to launch your property.'}
-            {currentStep === 'completed' && 'Your property has been set up successfully!'}
-          </CardDescription>
+          <CardTitle className="text-2xl">{stepInfo.title}</CardTitle>
+          <CardDescription>{stepInfo.description}</CardDescription>
         </CardHeader>
+        
         <CardContent>
-          {currentStep === 'business-basics' && <BusinessBasicsForm />}
-          {currentStep === 'property-config' && <PropertyConfigForm />}
-          {currentStep === 'policies' && <PoliciesForm />}
-          {currentStep === 'completed' && <CompletedStep />}
+          {renderStepContent()}
+          
+          <div className="flex justify-between mt-8">
+            {showPrevious ? (
+              <Button 
+                variant="outline" 
+                onClick={handlePrevious}
+                disabled={loading}
+              >
+                Previous
+              </Button>
+            ) : (
+              <div></div>
+            )}
+            
+            <Button 
+              variant="default" 
+              onClick={handleNext}
+              disabled={!canContinue || loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {isLastStep ? 'Completing...' : 'Saving...'}
+                </>
+              ) : (
+                isLastStep ? 'Complete Setup' : 'Continue'
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
-};
-
-// Main component that provides the context
-export const OnboardingWizard = () => {
-  return (
-    <OnboardingProvider>
-      <OnboardingWizardContent />
-    </OnboardingProvider>
-  );
-};
+}

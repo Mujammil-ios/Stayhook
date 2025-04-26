@@ -1,121 +1,148 @@
 /**
- * Onboarding Progress
+ * OnboardingProgress Component
  * 
- * Displays the current progress in the onboarding wizard.
+ * Displays a progress stepper for the onboarding process
  */
 
-import { Check, Hotel, Settings, FileText } from 'lucide-react';
-import { useOnboarding } from '../hooks/useOnboarding';
+import { useState } from 'react';
+import { OnboardingStep } from '../types/index';
+import { Check, CircleDashed, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { OnboardingStep } from '../types';
 
-export const OnboardingProgress = () => {
-  const { currentStep, setCurrentStep, isLoading } = useOnboarding();
-  
-  // Define steps
-  const steps: { id: OnboardingStep, label: string, icon: React.ReactNode }[] = [
-    {
-      id: 'business-basics',
-      label: 'Business Basics',
-      icon: <Hotel className="h-5 w-5" />,
-    },
-    {
-      id: 'property-config',
-      label: 'Property Setup',
-      icon: <Settings className="h-5 w-5" />,
-    },
-    {
-      id: 'policies',
-      label: 'Policies & Launch',
-      icon: <FileText className="h-5 w-5" />,
-    },
+interface OnboardingProgressProps {
+  currentStep: OnboardingStep;
+  stepsCompleted: Record<OnboardingStep, boolean>;
+  onSelectStep: (step: OnboardingStep) => void;
+}
+
+export function OnboardingProgress({
+  currentStep,
+  stepsCompleted,
+  onSelectStep
+}: OnboardingProgressProps) {
+  // Define all steps and their display names
+  const steps = [
+    { id: OnboardingStep.BUSINESS_BASICS, name: 'Business Basics' },
+    { id: OnboardingStep.PROPERTY_CONFIG, name: 'Property Setup' },
+    { id: OnboardingStep.POLICIES, name: 'Policies' },
+    { id: OnboardingStep.COMPLETED, name: 'Complete' }
   ];
-  
-  // Map step IDs to their indices for comparison
-  const stepIndices: Record<OnboardingStep, number> = {
-    'business-basics': 0,
-    'property-config': 1,
-    'policies': 2,
-    'completed': 3,
+
+  // Calculate active and completed steps
+  const getStepStatus = (stepId: OnboardingStep) => {
+    const stepIndex = steps.findIndex(s => s.id === stepId);
+    const currentIndex = steps.findIndex(s => s.id === currentStep);
+    
+    // Current step
+    if (stepId === currentStep) {
+      return 'current';
+    }
+    
+    // Completed step
+    if (stepIndex < currentIndex) {
+      return 'completed';
+    }
+    
+    // Future step
+    return 'future';
   };
   
-  // Handle step click - allow going back to previous steps but not skipping ahead
-  const handleStepClick = (stepId: OnboardingStep) => {
-    if (isLoading) return; // Don't allow changing steps while loading
+  // Check if a step is clickable
+  const isStepClickable = (stepId: OnboardingStep) => {
+    const stepIndex = steps.findIndex(s => s.id === stepId);
+    const currentIndex = steps.findIndex(s => s.id === currentStep);
     
-    const currentIndex = stepIndices[currentStep];
-    const targetIndex = stepIndices[stepId];
-    
-    // Only allow going backward or staying on current step
-    if (targetIndex <= currentIndex) {
-      setCurrentStep(stepId);
+    // All steps before current are clickable
+    if (stepIndex < currentIndex) {
+      return true;
     }
+    
+    // Current step is clickable
+    if (stepId === currentStep) {
+      return true;
+    }
+    
+    // Future steps are not clickable by default
+    return false;
   };
   
   return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between">
+    <div className="relative">
+      <div className="flex items-center justify-between w-full">
         {steps.map((step, index) => {
-          const isActive = currentStep === step.id;
-          const isCompleted = stepIndices[currentStep] > index;
+          const status = getStepStatus(step.id);
+          const clickable = isStepClickable(step.id);
+          const completed = stepsCompleted[step.id];
           
           return (
-            <div key={step.id} className="relative flex-1">
-              {/* Connector line */}
+            <div 
+              key={step.id} 
+              className="flex flex-col items-center relative"
+            >
+              {/* Line connecting steps */}
               {index > 0 && (
                 <div 
                   className={cn(
-                    "absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1 -mx-2 z-0",
-                    isCompleted || (isActive && index > 0) 
-                      ? "bg-primary" 
-                      : "bg-muted"
+                    "absolute h-[2px] top-4 -left-1/2 w-full -z-10 transition-colors",
+                    {
+                      "bg-primary": status === 'completed' || (status === 'current' && steps[index-1] && getStepStatus(steps[index-1].id) === 'completed'),
+                      "bg-muted": status === 'future' || (status === 'current' && steps[index-1] && getStepStatus(steps[index-1].id) !== 'completed')
+                    }
                   )}
-                  style={{ left: '-50%', right: '50%' }}
                 />
               )}
               
-              {/* Step button */}
+              {/* Step indicator */}
               <button
-                type="button"
-                onClick={() => handleStepClick(step.id)}
-                disabled={isLoading}
+                onClick={() => clickable && onSelectStep(step.id)}
+                disabled={!clickable}
                 className={cn(
-                  "relative flex flex-col items-center justify-center z-10 transition-all",
-                  "disabled:opacity-70 disabled:cursor-not-allowed"
+                  "w-8 h-8 rounded-full flex items-center justify-center mb-2 transition-colors",
+                  {
+                    "bg-primary text-primary-foreground": status === 'current',
+                    "bg-primary/10 text-primary hover:bg-primary/20": status === 'completed' && clickable,
+                    "bg-muted text-muted-foreground": status === 'future' || !clickable
+                  }
                 )}
               >
-                {/* Step circle */}
-                <div
-                  className={cn(
-                    "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors",
-                    isActive && "border-primary bg-primary text-primary-foreground",
-                    isCompleted && "border-primary bg-primary text-primary-foreground",
-                    !isActive && !isCompleted && "border-muted-foreground bg-background text-muted-foreground"
-                  )}
-                >
-                  {isCompleted ? (
-                    <Check className="h-5 w-5" />
-                  ) : (
-                    step.icon
-                  )}
-                </div>
-                
-                {/* Step label */}
+                {status === 'completed' ? (
+                  <Check className="h-4 w-4" />
+                ) : status === 'current' ? (
+                  <CircleDot className="h-4 w-4" />
+                ) : (
+                  <CircleDashed className="h-4 w-4" />
+                )}
+              </button>
+              
+              {/* Step name */}
+              <span 
+                className={cn(
+                  "text-sm font-medium",
+                  {
+                    "text-primary": status === 'current',
+                    "text-foreground": status === 'completed',
+                    "text-muted-foreground": status === 'future'
+                  }
+                )}
+              >
+                {step.name}
+              </span>
+              
+              {/* Completion status for current step */}
+              {status === 'current' && (
                 <span 
                   className={cn(
-                    "mt-2 text-sm font-medium",
-                    isActive && "text-primary font-semibold",
-                    isCompleted && "text-primary",
-                    !isActive && !isCompleted && "text-muted-foreground"
+                    "text-xs mt-1",
+                    completed ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
                   )}
                 >
-                  {step.label}
+                  {completed ? "Complete" : "In progress"}
                 </span>
-              </button>
+              )}
             </div>
           );
         })}
       </div>
     </div>
   );
-};
+}

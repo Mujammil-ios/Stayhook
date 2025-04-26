@@ -1,345 +1,339 @@
 /**
- * Onboarding Hook
+ * Onboarding Context and Hook
  * 
- * Custom hook for managing onboarding state and operations.
+ * Provides state management and context for the onboarding process
  */
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { onboardingService } from '@/shared/services';
-import {
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { 
+  BusinessBasicsFormData, 
+  OnboardingFormState, 
   OnboardingStep,
-  OnboardingFormState,
-  BusinessBasicsFormData,
+  PolicyFormData,
   PropertyConfigFormData,
-  Policy,
-  RoomType,
-  OnboardingContextType,
-} from '../types';
+  EMPTY_BUSINESS_BASICS_FORM,
+  EMPTY_PROPERTY_CONFIG_FORM,
+  EMPTY_POLICY_FORM,
+  convertBusinessBasicsFormToApiFormat,
+  convertPolicyFormToApiFormat
+} from '../types/index';
+import { onboardingService } from '@/shared/services';
 import { useToast } from '@/hooks/use-toast';
 
-// Default empty form state
-const defaultFormState: OnboardingFormState = {
-  businessBasics: {
-    propertyName: '',
-    contactNumber: '',
-    propertyType: '',
-    description: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      country: '',
-      postalCode: '',
-    },
-    currency: 'USD',
-  },
-  propertyConfig: {
-    amenities: [],
-    photos: [],
-    roomTypes: [],
-  },
-  policies: [],
+// Context type
+interface OnboardingContextType {
+  formState: OnboardingFormState;
+  loading: boolean;
+  updateBusinessBasics: (data: BusinessBasicsFormData) => void;
+  updatePropertyConfig: (data: PropertyConfigFormData) => void;
+  updatePolicy: (policyIndex: number, data: PolicyFormData) => void;
+  addPolicy: () => void;
+  removePolicy: (policyIndex: number) => void;
+  saveBusinessBasics: () => Promise<boolean>;
+  savePropertyConfig: () => Promise<boolean>;
+  savePolicies: () => Promise<boolean>;
+  completeOnboarding: () => Promise<boolean>;
+  goToStep: (step: OnboardingStep) => void;
+  isStepValid: (step: OnboardingStep) => boolean;
+}
+
+// Initial context state
+const initialState: OnboardingFormState = {
+  businessBasics: EMPTY_BUSINESS_BASICS_FORM,
+  propertyConfig: EMPTY_PROPERTY_CONFIG_FORM,
+  policies: [{ ...EMPTY_POLICY_FORM }],
+  currentStep: OnboardingStep.BUSINESS_BASICS,
+  completed: false
 };
 
-// Create context
+// Create the context
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
-// Provider component
-export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>('business-basics');
-  const [formState, setFormState] = useState<OnboardingFormState>(defaultFormState);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+// Context provider component
+export function OnboardingProvider({ children }: { children: ReactNode }) {
+  const [formState, setFormState] = useState<OnboardingFormState>(initialState);
+  const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
-  // Fetch onboarding status when component mounts
+  // Fetch initial onboarding state on mount
   useEffect(() => {
-    const fetchOnboardingStatus = async () => {
-      setIsLoading(true);
+    async function fetchOnboardingState() {
+      setLoading(true);
       try {
-        const response = await onboardingService.getOnboardingStatus();
+        const response = await onboardingService.getOnboardingState();
         
-        if (response.data) {
-          // Update currentStep
-          setCurrentStep(response.data.currentStep);
-          
-          // Update form state with any existing data
-          const newFormState = { ...defaultFormState };
-          
-          if (response.data.businessBasics) {
-            newFormState.businessBasics = response.data.businessBasics;
-          }
-          
-          if (response.data.propertyConfig) {
-            // Handle property photos and room type photos conversion
-            const propertyConfig = {
-              amenities: response.data.propertyConfig.amenities || [],
-              photos: [], // We'll need to fetch the actual File objects elsewhere if needed
-              roomTypes: response.data.propertyConfig.roomTypes.map(roomType => ({
-                ...roomType,
-                photos: [], // We'll need to fetch the actual File objects elsewhere if needed
-              })),
-            };
-            
-            newFormState.propertyConfig = propertyConfig;
-          }
-          
-          if (response.data.policies) {
-            newFormState.policies = response.data.policies;
-          }
-          
-          setFormState(newFormState);
+        if (response.success && response.data) {
+          // Convert API data to form state
+          setFormState({
+            businessBasics: response.data.businessBasics || EMPTY_BUSINESS_BASICS_FORM,
+            propertyConfig: {
+              amenities: response.data.propertyConfig?.amenities || [],
+              photos: [],
+              roomTypes: []
+            },
+            policies: response.data.policies?.length > 0 
+              ? response.data.policies
+              : [{ ...EMPTY_POLICY_FORM }],
+            currentStep: response.data.currentStep as OnboardingStep || OnboardingStep.BUSINESS_BASICS,
+            completed: response.data.completed || false
+          });
         }
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch onboarding status');
+      } catch (error) {
+        console.error('Error fetching onboarding state:', error);
         toast({
-          title: 'Error',
-          description: err.message || 'Failed to fetch onboarding status',
-          variant: 'destructive',
+          title: "Error",
+          description: "Failed to load onboarding data",
+          variant: "destructive"
         });
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    };
-    
-    fetchOnboardingStatus();
+    }
+
+    fetchOnboardingState();
   }, [toast]);
 
-  // Update businessBasics in form state
-  const updateBusinessBasics = (data: Partial<BusinessBasicsFormData>) => {
+  // Form update handlers
+  const updateBusinessBasics = (data: BusinessBasicsFormData) => {
     setFormState(prev => ({
       ...prev,
-      businessBasics: {
-        ...prev.businessBasics,
-        ...data,
-      },
+      businessBasics: data
     }));
   };
 
-  // Update propertyConfig in form state
-  const updatePropertyConfig = (data: Partial<PropertyConfigFormData>) => {
+  const updatePropertyConfig = (data: PropertyConfigFormData) => {
     setFormState(prev => ({
       ...prev,
-      propertyConfig: {
-        ...prev.propertyConfig,
-        ...data,
-      },
+      propertyConfig: data
     }));
   };
 
-  // Add a new room type to propertyConfig
-  const addRoomType = (roomType: RoomType) => {
-    setFormState(prev => ({
-      ...prev,
-      propertyConfig: {
-        ...prev.propertyConfig,
-        roomTypes: [...prev.propertyConfig.roomTypes, roomType],
-      },
-    }));
-  };
-
-  // Update a room type in propertyConfig
-  const updateRoomType = (index: number, roomType: Partial<RoomType>) => {
+  const updatePolicy = (policyIndex: number, data: PolicyFormData) => {
     setFormState(prev => {
-      const newRoomTypes = [...prev.propertyConfig.roomTypes];
-      newRoomTypes[index] = {
-        ...newRoomTypes[index],
-        ...roomType,
-      };
-      
+      const updatedPolicies = [...prev.policies];
+      updatedPolicies[policyIndex] = data;
       return {
         ...prev,
-        propertyConfig: {
-          ...prev.propertyConfig,
-          roomTypes: newRoomTypes,
-        },
+        policies: updatedPolicies
       };
     });
   };
 
-  // Remove a room type from propertyConfig
-  const removeRoomType = (index: number) => {
-    setFormState(prev => {
-      const newRoomTypes = [...prev.propertyConfig.roomTypes];
-      newRoomTypes.splice(index, 1);
-      
-      return {
-        ...prev,
-        propertyConfig: {
-          ...prev.propertyConfig,
-          roomTypes: newRoomTypes,
-        },
-      };
-    });
-  };
-
-  // Add a new policy
-  const addPolicy = (policy: Policy) => {
+  const addPolicy = () => {
     setFormState(prev => ({
       ...prev,
-      policies: [...prev.policies, policy],
+      policies: [...prev.policies, { ...EMPTY_POLICY_FORM }]
     }));
   };
 
-  // Update a policy
-  const updatePolicy = (index: number, policy: Partial<Policy>) => {
-    setFormState(prev => {
-      const newPolicies = [...prev.policies];
-      newPolicies[index] = {
-        ...newPolicies[index],
-        ...policy,
-      };
-      
-      return {
-        ...prev,
-        policies: newPolicies,
-      };
-    });
+  const removePolicy = (policyIndex: number) => {
+    setFormState(prev => ({
+      ...prev,
+      policies: prev.policies.filter((_, index) => index !== policyIndex)
+    }));
   };
 
-  // Remove a policy
-  const removePolicy = (index: number) => {
-    setFormState(prev => {
-      const newPolicies = [...prev.policies];
-      newPolicies.splice(index, 1);
-      
-      return {
-        ...prev,
-        policies: newPolicies,
-      };
-    });
-  };
-
-  // Save business basics to API
+  // API save handlers
   const saveBusinessBasics = async (): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
-    
+    setLoading(true);
     try {
-      const response = await onboardingService.saveBusinessBasics(formState.businessBasics);
+      const data = convertBusinessBasicsFormToApiFormat(formState.businessBasics);
+      const response = await onboardingService.saveBusinessBasics(data);
       
-      if (response.status >= 200 && response.status < 300) {
+      if (response.success) {
         toast({
-          title: 'Success',
-          description: 'Business basics saved successfully',
+          title: "Success",
+          description: "Business basics saved successfully"
         });
-        setCurrentStep('property-config');
         return true;
       } else {
-        throw new Error(response.message || 'Failed to save business basics');
+        toast({
+          title: "Error",
+          description: response.message || "Failed to save business basics",
+          variant: "destructive"
+        });
+        return false;
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to save business basics');
+    } catch (error: any) {
+      console.error('Error saving business basics:', error);
       toast({
-        title: 'Error',
-        description: err.message || 'Failed to save business basics',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to save business basics",
+        variant: "destructive"
       });
       return false;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Save property configuration to API
   const savePropertyConfig = async (): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
-    
+    setLoading(true);
     try {
       const response = await onboardingService.savePropertyConfig(formState.propertyConfig);
       
-      if (response.status >= 200 && response.status < 300) {
+      if (response.success) {
         toast({
-          title: 'Success',
-          description: 'Property configuration saved successfully',
+          title: "Success",
+          description: "Property configuration saved successfully"
         });
-        setCurrentStep('policies');
         return true;
       } else {
-        throw new Error(response.message || 'Failed to save property configuration');
+        toast({
+          title: "Error",
+          description: response.message || "Failed to save property configuration",
+          variant: "destructive"
+        });
+        return false;
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to save property configuration');
+    } catch (error: any) {
+      console.error('Error saving property configuration:', error);
       toast({
-        title: 'Error',
-        description: err.message || 'Failed to save property configuration',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to save property configuration",
+        variant: "destructive"
       });
       return false;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Complete onboarding by saving policies and finalizing
-  const completeOnboarding = async (): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
-    
+  const savePolicies = async (): Promise<boolean> => {
+    setLoading(true);
     try {
-      const response = await onboardingService.completeOnboarding(formState.policies);
+      const policies = formState.policies.map(policy => convertPolicyFormToApiFormat(policy));
+      const response = await onboardingService.savePolicies(policies);
       
-      if (response.status >= 200 && response.status < 300) {
+      if (response.success) {
         toast({
-          title: 'Success',
-          description: 'Onboarding completed successfully',
+          title: "Success",
+          description: "Policies saved successfully"
         });
-        setCurrentStep('completed');
         return true;
       } else {
-        throw new Error(response.message || 'Failed to complete onboarding');
+        toast({
+          title: "Error",
+          description: response.message || "Failed to save policies",
+          variant: "destructive"
+        });
+        return false;
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to complete onboarding');
+    } catch (error: any) {
+      console.error('Error saving policies:', error);
       toast({
-        title: 'Error',
-        description: err.message || 'Failed to complete onboarding',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to save policies",
+        variant: "destructive"
       });
       return false;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Reset form state
-  const reset = () => {
-    setFormState(defaultFormState);
-    setCurrentStep('business-basics');
-    setError(null);
+  const completeOnboarding = async (): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const response = await onboardingService.completeOnboarding();
+      
+      if (response.success) {
+        setFormState(prev => ({
+          ...prev,
+          completed: true
+        }));
+        
+        toast({
+          title: "Success",
+          description: "Onboarding completed successfully"
+        });
+        return true;
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to complete onboarding",
+          variant: "destructive"
+        });
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Error completing onboarding:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to complete onboarding",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Context value
-  const contextValue: OnboardingContextType = {
-    currentStep,
-    formState,
-    isLoading,
-    error,
-    setCurrentStep,
-    updateBusinessBasics,
-    updatePropertyConfig,
-    addRoomType,
-    updateRoomType,
-    removeRoomType,
-    addPolicy,
-    updatePolicy,
-    removePolicy,
-    saveBusinessBasics,
-    savePropertyConfig,
-    completeOnboarding,
-    reset,
+  // Navigation
+  const goToStep = (step: OnboardingStep) => {
+    setFormState(prev => ({
+      ...prev,
+      currentStep: step
+    }));
   };
 
+  // Validate step before proceeding
+  const isStepValid = (step: OnboardingStep): boolean => {
+    switch (step) {
+      case OnboardingStep.BUSINESS_BASICS:
+        const bb = formState.businessBasics;
+        return !!(
+          bb.propertyName && 
+          bb.propertyType && 
+          bb.addressStreet && 
+          bb.addressCity && 
+          bb.addressState && 
+          bb.addressCountry && 
+          bb.addressPostalCode && 
+          bb.contactPhone && 
+          bb.contactEmail
+        );
+        
+      case OnboardingStep.PROPERTY_CONFIG:
+        const pc = formState.propertyConfig;
+        return !!(
+          pc.amenities.length > 0
+        );
+        
+      case OnboardingStep.POLICIES:
+        return formState.policies.every(policy => 
+          !!(policy.name && policy.description && policy.rules.length > 0)
+        );
+        
+      default:
+        return true;
+    }
+  };
+
+  // Provide context
   return (
-    <OnboardingContext.Provider value={contextValue}>
+    <OnboardingContext.Provider value={{
+      formState,
+      loading,
+      updateBusinessBasics,
+      updatePropertyConfig,
+      updatePolicy,
+      addPolicy,
+      removePolicy,
+      saveBusinessBasics,
+      savePropertyConfig,
+      savePolicies,
+      completeOnboarding,
+      goToStep,
+      isStepValid
+    }}>
       {children}
     </OnboardingContext.Provider>
   );
-};
+}
 
-// Custom hook to use the onboarding context
-export const useOnboarding = () => {
+// Custom hook to use the context
+export function useOnboarding() {
   const context = useContext(OnboardingContext);
   
   if (context === undefined) {
@@ -347,4 +341,4 @@ export const useOnboarding = () => {
   }
   
   return context;
-};
+}

@@ -16,8 +16,10 @@ import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import Help from "@/pages/help";
 import FormsDemo from "@/pages/forms-demo";
+import Onboarding from "@/pages/onboarding";
 import { ThemeProvider } from "@/hooks/useThemeContext";
 import { AuthProvider, useAuth } from "@/hooks/useAuthContext";
+import { OnboardingProvider } from "@/features/onboarding/hooks/useOnboarding";
 
 // Import auth pages
 import Login from "@/pages/auth/login";
@@ -87,6 +89,16 @@ function Routes() {
   
   // If authenticated, show main app
   // Note: Key prop forces Layout to re-render when location changes
+  
+  // Handle the onboarding page separately - it should not use the regular Layout
+  if (location === '/onboarding') {
+    return (
+      <Suspense fallback={<LoadingIndicator />}>
+        <Onboarding />
+      </Suspense>
+    );
+  }
+  
   return (
     <Layout key={location}>
       <Suspense fallback={<LoadingIndicator />}>
@@ -138,10 +150,12 @@ function App() {
       <div className={mounted ? '' : 'invisible'}>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
+            <OnboardingProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Router />
+              </TooltipProvider>
+            </OnboardingProvider>
           </QueryClientProvider>
         </AuthProvider>
       </div>
