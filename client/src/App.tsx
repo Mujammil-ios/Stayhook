@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -64,24 +64,54 @@ function Routes() {
   // If authenticated, show main app
   return (
     <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/property" component={Property} />
-        <Route path="/rooms" component={Rooms} />
-        <Route path="/bookings" component={Bookings} />
-        <Route path="/reservations" component={Reservations} />
-        <Route path="/staff" component={Staff} />
-        <Route path="/analytics" component={Analytics} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/help" component={Help} />
-        <Route path="/forms-demo" component={FormsDemo} />
-        <Route path="/privacy-policy" component={() => import("@/pages/privacy-policy").then(module => <module.default />)} />
-        <Route path="/terms-and-conditions" component={() => import("@/pages/terms-and-conditions").then(module => <module.default />)} />
-        <Route path="/room-types" component={() => import("@/pages/room-types").then(module => <module.default />)} />
-        <Route path="/recent-bookings" component={() => import("@/pages/recent-bookings").then(module => <module.default />)} />
-        <Route component={NotFound} />
-      </Switch>
+      <Suspense fallback={
+        <div className="flex h-[80vh] w-full items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <p className="text-sm text-neutral-500">Loading...</p>
+          </div>
+        </div>
+      }>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/property" component={Property} />
+          <Route path="/rooms" component={Rooms} />
+          <Route path="/bookings" component={Bookings} />
+          <Route path="/reservations" component={Reservations} />
+          <Route path="/staff" component={Staff} />
+          <Route path="/analytics" component={Analytics} />
+          <Route path="/settings" component={Settings} />
+          <Route path="/help" component={Help} />
+          <Route path="/forms-demo" component={FormsDemo} />
+          <Route path="/privacy-policy">
+            <React.Suspense fallback={<div>Loading...</div>}>
+              {React.createElement(React.lazy(() => import("@/pages/privacy-policy")))}
+            </React.Suspense>
+          </Route>
+          <Route path="/terms-and-conditions">
+            <React.Suspense fallback={<div>Loading...</div>}>
+              {React.createElement(React.lazy(() => import("@/pages/terms-and-conditions")))}
+            </React.Suspense>
+          </Route>
+          <Route path="/room-types">
+            <React.Suspense fallback={<div>Loading...</div>}>
+              {React.createElement(React.lazy(() => import("@/pages/room-types")))}
+            </React.Suspense>
+          </Route>
+          <Route path="/recent-bookings">
+            <React.Suspense fallback={<div>Loading...</div>}>
+              {React.createElement(React.lazy(() => import("@/pages/recent-bookings")))}
+            </React.Suspense>
+          </Route>
+          <Route path="/customer-support">
+            <React.Suspense fallback={<div>Loading...</div>}>
+              {React.createElement(React.lazy(() => import("@/pages/customer-support")))}
+            </React.Suspense>
+          </Route>
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
     </Layout>
   );
 }

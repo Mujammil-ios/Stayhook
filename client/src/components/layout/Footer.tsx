@@ -23,11 +23,11 @@ const Footer = () => {
             Terms & Conditions
           </Link>
           <Link 
-            href="/help#contact" 
+            href="/customer-support" 
             className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150 active:opacity-80 touch-target px-1 flex items-center"
           >
             <i className="ri-customer-service-line mr-1.5 text-xs"></i>
-            Contact Support
+            Customer Support
           </Link>
         </div>
       </div>

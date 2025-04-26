@@ -1,0 +1,30 @@
+I need you to implement several new pages and fix a React render error in our Hotel Management System. Please execute all steps straight through without pausing:
+
+1. FIX “Objects are not valid as a React child (found: [object Promise])” ERROR  
+   - This error indicates a component is directly rendering a Promise.  
+   - Locate any async data fetching in render functions or JSX and refactor to use state/hooks (e.g., useEffect + useState) so the component renders only after the Promise resolves.  
+   - Ensure all data is loaded before rendering lists or details, showing a loading state while awaiting.
+
+2. CREATE POLICY & SUPPORT PAGES  
+   A. Privacy Policy (`/privacy-policy`)  
+      - Add a new page with standard GDPR-compliant privacy policy text.  
+   B. Terms & Conditions (`/terms-and-conditions`)  
+      - Add a new page with standard T&C text covering bookings, cancellations, liability, etc.  
+   C. Customer Support (`/customer-support`)  
+      - Add a contact form (name, email, message) that logs submissions to console.  
+      - Include a small FAQ section below the form.
+
+3. ADD “VIEW ALL” DETAIL PAGES  
+   A. All Room Types (`/room-types`)  
+      - Display a responsive list or table of room types with filters for type, price range.  
+   B. Recent Bookings (`/recent-bookings`)  
+      - Display a responsive list/table of latest bookings sortable by date and searchable by guest name.  
+   - On the dashboard, wire up the “View All Room Types” and “View All Recent Bookings” buttons/links to these pages.  
+   - Add a back button or breadcrumb on each page to return to the dashboard.
+
+4. IMPLEMENTATION REQUIREMENTS  
+   - Use the existing routing and component patterns (Next.js pages or React Router).  
+   - Keep styling consistent with Tailwind/theme tokens; ensure full responsiveness at mobile/tablet/desktop breakpoints.  
+   - Add loading and error states for all async data.  
+   - Ensure all new links and buttons have hover/focus states, keyboard accessibility, and proper ARIA attributes.  
+   - Do not introduce new external libraries. Deliver all code changes in one batch without mid-process confirmations.
