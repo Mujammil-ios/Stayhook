@@ -62,8 +62,8 @@ const Header = ({ toggleMobileMenu }: HeaderProps) => {
               {index === breadcrumbs.length - 1 ? (
                 <span className="text-neutral-800 dark:text-neutral-200">{crumb.label}</span>
               ) : (
-                <Link href={crumb.path}>
-                  <a className="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">{crumb.label}</a>
+                <Link href={crumb.path} className="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
+                  {crumb.label}
                 </Link>
               )}
             </div>

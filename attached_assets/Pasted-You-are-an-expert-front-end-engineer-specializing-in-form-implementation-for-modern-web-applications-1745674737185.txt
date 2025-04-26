@@ -1,0 +1,168 @@
+You are an expert front-end engineer specializing in form implementation for modern web applications. I have an existing Hotel Management SaaS with a sophisticated UI already built, but now need comprehensive form implementations for all data entry points. The application currently has navigation, visual elements, and static components using HTML, CSS, and vanilla JavaScript, but lacks functional forms for entering and submitting data.
+
+I need you to implement form interfaces for all key data entry points based on the existing aesthetic (glassmorphism, micro shadows, vibrant accent colors on neutral backgrounds). All forms should follow the same design language as the rest of the application.
+
+Technical Requirements:
+
+1. Form Architecture
+   - Create reusable form components with consistent styling that match the existing UI theme
+   - Implement client-side validation for all form fields with appropriate visual feedback
+   - Design modals, sliding panels, or expandable sections for form display that integrate naturally with existing UI
+   - Ensure all forms are fully responsive and maintain the design integrity across devices
+   - Add form field animations and transitions consistent with the application's motion design
+
+2. Form Functionality
+   - On form submission, log all field values to the console (no backend integration needed)
+   - Implement form validation with visual feedback before submission is allowed
+   - Include appropriate loading states during submission simulation
+   - Add success/error notifications after form submission
+   - Implement form reset functionality to clear all fields
+
+3. Specific Form Implementations
+
+   A. Property Onboarding Forms (High Priority)
+      - Multi-step wizard interface for property creation (Steps 1-9 as specified)
+      - Each step should be a separate form with "Next" and "Back" buttons
+      - Progress indicator showing completion status
+      - Field validation appropriate to each step
+      - Ability to save progress and continue later
+      
+      Required fields per step:
+      - Step 1: Property name, contact number, type, description, GST number (optional with checkbox to enable)
+      - Step 2: Street address, secondary address, city, state, country, postal code, currency selector
+      - Step 3: Amenities selection with checkboxes/toggles
+      - Step 4: Photo upload interface (max 20 photos) with preview functionality
+      - Step 5: Bed type selector, total rooms input, custom room ID pattern
+      - Step 6: Adult occupancy limits, child occupancy limits, pricing fields for default, minimum and extra
+      - Step 7: Room amenities selection with checkbox/toggle options
+      - Step 8: Room photo upload (max 20) with preview
+      - Step 9: Policy creation with name, description, and rules inputs
+
+   B. Reservation Management Forms (High Priority)
+      - New Reservation form with following sections:
+        * Customer details (name, Aadhar no. with image upload, mobile, vehicle no.)
+        * Check-in/out date selection with calendar interface
+        * Travel details (from/to locations)
+        * Guest demographics (gender and age counts)
+        * Optional photo capture interface
+        * Contact information and address fields
+        * Nationality selector
+        * Room selection with price display
+        * Price override option (checkbox to enable manual price entry)
+        * Discount/coupon code field
+      
+      - Reservation Modification form
+        * Fields to update existing reservation details
+        * Change date functionality with availability check
+        * Room change option with differential pricing
+
+   C. Employee Management Forms (Medium Priority)
+      - Employee Record Form:
+        * Basic details (ID, name, designation)
+        * Employment dates (joining and optional leaving)
+        * Salary information fields
+        * Performance metrics inputs
+        * Training record fields
+      
+      - Attendance Management Form:
+        * Leave request interface with date selection
+        * Schedule management interface
+
+   D. Room Management Forms (Medium Priority)
+      - Room Creation/Edit Form:
+        * Room number and floor input
+        * Room type/category selector
+        * Capacity configuration
+        * Status dropdown (Available, Occupied, Maintenance, Cleaning)
+        * Base rate and seasonal pricing options
+        * Amenities checklist specific to the room
+      
+      - Room Status Update Form:
+        * Quick status change interface
+        * Maintenance request form with issue description
+
+   E. Housekeeping Forms (Medium Priority)
+      - Cleaning Status Update Form:
+        * Room selector
+        * Status dropdown (Cleaned, Pending, In Progress)
+        * Notes field for special instructions
+      
+      - Cleaning Request Form:
+        * Room selection
+        * Urgency level
+        * Special requirements checkbox list
+        * Assign to specific staff member
+
+4. Form Trigger Points
+   Implement specific UI elements to trigger forms:
+
+   - Property Profile Page:
+     * "Edit Property" button opens the property edit form
+     * "Add Room" button opens room creation form
+     * "Edit Room" buttons on room cards open room edit forms
+
+   - Live Monitor Page:
+     * "Check In" button opens check-in form
+     * "Check Out" button opens check-out form with billing summary
+     * Room status indicators should be clickable to update status
+
+   - Reservations Page:
+     * "New Reservation" button opens reservation form
+     * Existing reservations should have "Edit" buttons
+
+   - Staff Management Page:
+     * "Add Employee" button opens employee creation form
+     * Employee cards should have "Edit" buttons
+     * "Record Attendance" button for attendance forms
+
+   - Housekeeping Page:
+     * "Update Status" buttons for room cleaning status
+     * "Request Cleaning" button for cleaning requests
+
+5. Implementation Details
+   - Use JavaScript modules for form components
+   - Create a FormValidator class for consistent validation
+   - Implement a FormRenderer service for dynamic form generation
+   - Use custom events for form submission and validation
+   - Store form state in sessionStorage for multi-step forms
+
+6. Visual Requirements
+   - Forms should use the same glassmorphism style as the rest of the UI
+   - Form sections should have subtle separators
+   - Required fields should be clearly marked
+   - Validation errors should appear inline with gentle animations
+   - Submit buttons should follow the existing button style with hover effects
+   - Form fields should have focus states with accent color highlights
+   - Modal forms should have subtle entrance/exit animations
+   
+7. Accessibility Requirements
+   - All form fields must have proper labels
+   - Error messages must be connected to fields via aria-describedby
+   - Keyboard navigation must work for all form elements
+   - Modal forms must trap focus appropriately
+   - Color contrast must meet WCAG AA standards
+
+8. Code Structure
+   /scripts
+   ├── forms/
+   │   ├── base/
+   │   │   ├── formField.js
+   │   │   ├── formValidator.js
+   │   │   └── formRenderer.js
+   │   ├── components/
+   │   │   ├── textInput.js
+   │   │   ├── selectInput.js
+   │   │   ├── dateInput.js
+   │   │   ├── fileInput.js
+   │   │   └── etc...
+   │   └── specific/
+   │       ├── propertyForms.js
+   │       ├── reservationForms.js
+   │       ├── employeeForms.js
+   │       └── etc...
+   └── services/
+       └── formService.js
+
+Please focus on building the form components and integration rather than recreating the existing UI. The forms should slide in, pop up, or expand within the existing interface based on user actions. All form submissions should simply log the form data to the console with a success message displayed to the user.
+
+For the implementation, start with the highest priority forms first (Property Onboarding and Reservation Management) before moving to medium priority items. Ensure that each form is fully functional before moving to the next, with proper validation and interaction flow.
