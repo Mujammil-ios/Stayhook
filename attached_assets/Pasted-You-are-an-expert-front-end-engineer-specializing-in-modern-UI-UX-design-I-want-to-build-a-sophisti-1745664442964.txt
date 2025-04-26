@@ -1,0 +1,132 @@
+You are an expert front-end engineer specializing in modern UI/UX design. I want to build a sophisticated single-page Hotel Management web application using only HTML, CSS, and vanilla JavaScript (no back-end required). The application should reflect 2025's design sensibilities with a clean, intuitive interface incorporating current design trends.
+All data will be sourced from in-memory dummy JSON objects. The application should feature the following sections accessible via an elegant navigation system:
+Core Sections
+
+Live Dashboard - Real-time property monitoring with interactive visualizations
+Property Profile - Detailed property information with media gallery
+Room Management - Visual room layout with status indicators and quick-edit capabilities
+Booking History - Comprehensive booking records with advanced filtering and exports
+Reservation System - Intuitive booking flow with availability calendar
+Staff Portal - Team management with performance metrics
+Revenue Analytics - Financial insights with customizable charts and reports
+
+Technical Requirements
+A. Data Architecture
+Create a well-structured data.js file with normalized entities and relationships:
+
+Property (id, name, taxInfo, address, geoCoordinates, mediaGallery[], amenities[], description, contactInfo)
+Rooms (id, number, category, floor, capacity, amenities[], status, baseRate, dynamicPricing{}, maintenanceHistory[], mediaGallery[])
+Guests (id, personalInfo{}, identificationDoc, contactDetails{}, preferences{}, stayHistory[], loyaltyInfo{})
+Reservations (id, roomId, guestIds[], status, timeline{}, specialRequests[], paymentDetails{}, linkedBookings[])
+Staff (id, personalInfo{}, employmentDetails{}, performance{}, schedule[], accessPermissions[])
+Finance (dailyMetrics{}, monthlySummaries[], yearlyReports[], forecastData{}, expenseCategories[])
+
+B. Interface Architecture
+Create a responsive index.html with:
+
+A modern side navigation system with expandable sections and visual indicators
+Dark/light theme toggle supporting system preferences
+A primary content area with smooth transitions between sections
+Breadcrumb navigation showing context hierarchy
+Responsive design using CSS Grid and Flexbox (no frameworks)
+Component-based structure with CSS custom properties for theming
+
+C. JavaScript Architecture
+Implement a modular structure with:
+
+Core application shell using the module pattern or ES6 modules
+State management system to maintain application data coherence
+Component-based UI renderer with virtual DOM-like approach for efficient updates
+Service layer for data operations (CRUD simulations)
+Event bus for cross-component communication
+Router implementation using History API for deep linking
+Utility modules for common operations (date handling, currency formatting, etc.)
+
+D. Interactive Features
+Create compelling user interactions:
+
+Animated transitions between views using CSS animations and JS timing functions
+Interactive data visualizations for occupancy and revenue metrics
+Drag-and-drop room assignment capabilities
+Gesture support for touch devices (swipe between related content)
+Real-time notifications system for status changes
+Context-aware action panels that adapt to current content
+Progressive disclosure of complex information
+Skeleton loading states for perceived performance
+
+E. Design System
+Develop a comprehensive design system featuring:
+
+Variable-based theming with light/dark mode
+Accessibility-first component library (WCAG AA compliant)
+Micro-interactions for feedback and engagement
+Consistent typography with variable fonts for responsive sizing
+Modern color palette with semantic color application
+Neural morphism-inspired UI elements with subtle shadows and depth
+Consistent spacing system based on a modular scale
+Iconography system using SVG with dynamic colorization
+Motion design principles for smooth transitions
+
+F. Project Structure
+Organize the codebase with:
+/hotel-management-system
+├── index.html
+├── assets/
+│   ├── icons/
+│   ├── images/
+│   └── fonts/
+├── styles/
+│   ├── main.css
+│   ├── components/
+│   ├── layout/
+│   ├── utilities/
+│   └── themes/
+├── scripts/
+│   ├── app.js
+│   ├── router.js
+│   ├── state.js
+│   ├── services/
+│   ├── components/
+│   ├── utils/
+│   └── data.js
+└── README.md
+G. Implementation Plan
+
+Establish design system foundations (colors, typography, spacing)
+Create core layout structure with responsive navigation
+Implement router and application shell
+Design and implement data models with relationships
+Develop each section's UI components with placeholder data
+Integrate interactive features and animations
+Implement CRUD operations for each entity
+Add data visualization components
+Finalize responsive behavior and cross-device compatibility
+Implement accessibility features and keyboard navigation
+Add performance optimizations and loading states
+Comprehensive testing across viewports and use cases
+
+H. Visual Design Specifics
+Incorporate 2025's trending design elements:
+
+Glassmorphism for card surfaces with subtle transparency
+Micro shadows for depth without heavy visual weight
+Vibrant accent colors on a neutral background palette
+Asymmetric layouts with intentional white space
+Custom cursor effects for interactive elements
+Animated gradients for status indicators
+3D-like depth for important action areas
+Variable blur effects for focus management
+Seamless transitions between contextual states
+Minimal UI approach with progressive disclosure of options
+
+I. Code Examples
+Include complete implementation of:
+
+The main application shell with router
+One fully functional section (Room Management)
+Core components of the design system
+Data visualization modules
+State management pattern
+Interactive features with animations
+
+Please develop a sophisticated yet minimalist UI that balances functionality with aesthetic appeal, aligned with 2025's emphasis on spatial interfaces, intelligent defaults, and contextual adaptability. The application should feel premium and intuitive while maintaining excellent performance.
