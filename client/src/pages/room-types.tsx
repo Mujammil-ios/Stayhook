@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,44 +15,98 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// We'll add some more detail to the room types
-const roomTypesExtended = roomDistribution.map((room) => ({
-  ...room,
-  description: `${room.type} room with ${room.total} total units, featuring modern amenities and comfortable furnishings.`,
-  priceRange: room.type === "Standard" ? [89, 129] : 
-              room.type === "Deluxe" ? [139, 199] : 
-              room.type === "Suite" ? [229, 359] : [379, 599],
-  amenities: room.type === "Standard" ? ["Free Wi-Fi", "TV", "Air Conditioning"] :
-             room.type === "Deluxe" ? ["Free Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Room Service"] :
-             room.type === "Suite" ? ["Free Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Room Service", "Separate Living Area", "Bathtub"] :
-             ["Free Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Room Service", "Separate Living Area", "Bathtub", "Private Balcony", "Jacuzzi"],
-  image: `https://via.placeholder.com/300x200?text=${room.type.replace(' ', '+')}+Room`,
-  maxOccupancy: room.type === "Standard" ? 2 : 
-                room.type === "Deluxe" ? 3 : 
-                room.type === "Suite" ? 4 : 6
-}));
+// Define a RoomTypeModel as per requirements
+interface RoomTypeExtended {
+  id?: number;
+  type: string;
+  total: number;
+  occupied: number;
+  percentage: number;
+  description: string;
+  priceRange: [number, number];
+  amenities: string[];
+  image: string;
+  maxOccupancy: number;
+}
+
+const RoomTypeModel = {
+  getAll: async (): Promise<RoomTypeExtended[]> => {
+    // Simulate API call with delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const roomTypes = roomDistribution.map((room) => ({
+          ...room,
+          description: `${room.type} room with ${room.total} total units, featuring modern amenities and comfortable furnishings.`,
+          priceRange: room.type === "Standard" ? [89, 129] as [number, number] : 
+                    room.type === "Deluxe" ? [139, 199] as [number, number] : 
+                    room.type === "Suite" ? [229, 359] as [number, number] : [379, 599] as [number, number],
+          amenities: room.type === "Standard" ? ["Free Wi-Fi", "TV", "Air Conditioning"] :
+                    room.type === "Deluxe" ? ["Free Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Room Service"] :
+                    room.type === "Suite" ? ["Free Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Room Service", "Separate Living Area", "Bathtub"] :
+                    ["Free Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Room Service", "Separate Living Area", "Bathtub", "Private Balcony", "Jacuzzi"],
+          image: `https://via.placeholder.com/300x200?text=${room.type.replace(' ', '+')}+Room`,
+          maxOccupancy: room.type === "Standard" ? 2 : 
+                        room.type === "Deluxe" ? 3 : 
+                        room.type === "Suite" ? 4 : 6
+        }));
+        console.log(`[RoomTypeModel] Successfully fetched ${roomTypes.length} room types`);
+        resolve(roomTypes);
+      }, 500);
+    });
+  }
+};
 
 export default function RoomTypes() {
   const [searchQuery, setSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState<[number, number]>([50, 600]);
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [roomTypes, setRoomTypes] = useState<RoomTypeExtended[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch room types on component mount
+  useEffect(() => {
+    const fetchRoomTypes = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const types = await RoomTypeModel.getAll();
+        console.log(`[RoomTypes] Successfully loaded ${types.length} room types`);
+        setRoomTypes(types);
+      } catch (err) {
+        console.error('[RoomTypes] Error fetching room types:', err);
+        setError('Failed to load room types. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchRoomTypes();
+  }, []);
   
   // Filtered rooms based on search, price range, and type
   const filteredRooms = useMemo(() => {
-    return roomTypesExtended.filter((room) => {
-      // Filter by search query
-      const matchesSearch = room.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          room.description.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Filter by price range
-      const matchesPrice = room.priceRange[0] <= priceRange[1] && room.priceRange[1] >= priceRange[0];
-      
-      // Filter by room type
-      const matchesType = selectedType === "all" || room.type === selectedType;
-      
-      return matchesSearch && matchesPrice && matchesType;
+    if (!roomTypes || roomTypes.length === 0) return [];
+    
+    return roomTypes.filter((room) => {
+      try {
+        // Filter by search query
+        const matchesSearch = room.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            room.description.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Filter by price range
+        const matchesPrice = room.priceRange[0] <= priceRange[1] && room.priceRange[1] >= priceRange[0];
+        
+        // Filter by room type
+        const matchesType = selectedType === "all" || room.type === selectedType;
+        
+        return matchesSearch && matchesPrice && matchesType;
+      } catch (err) {
+        console.error('[RoomTypes] Error filtering room:', err);
+        return false;
+      }
     });
-  }, [searchQuery, priceRange, selectedType]);
+  }, [roomTypes, searchQuery, priceRange, selectedType]);
   
   return (
     <div>
@@ -127,7 +181,7 @@ export default function RoomTypes() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  {roomTypesExtended.map((room) => (
+                  {roomTypes.map((room: RoomTypeExtended) => (
                     <SelectItem key={room.type} value={room.type}>
                       {room.type}
                     </SelectItem>
@@ -159,8 +213,48 @@ export default function RoomTypes() {
       
       {/* Room Types Grid */}
       <div className="card-grid mb-10">
-        {filteredRooms.length > 0 ? (
-          filteredRooms.map((room) => (
+        {isLoading ? (
+          // Loading state
+          <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent mb-3"></div>
+            <h3 className="text-lg font-semibold mb-1">Loading Room Types...</h3>
+            <p className="text-neutral-500 dark:text-neutral-400 max-w-md">
+              Please wait while we fetch the available room types.
+            </p>
+          </div>
+        ) : error ? (
+          // Error state
+          <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+            <i className="ri-error-warning-line text-4xl text-destructive mb-3"></i>
+            <h3 className="text-lg font-semibold mb-1">Failed to Load Room Types</h3>
+            <p className="text-neutral-500 dark:text-neutral-400 max-w-md">
+              {error}
+            </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => {
+                setIsLoading(true);
+                setError(null);
+                RoomTypeModel.getAll()
+                  .then(types => {
+                    setRoomTypes(types);
+                    setIsLoading(false);
+                  })
+                  .catch(err => {
+                    console.error('[RoomTypes] Error on retry:', err);
+                    setError('Failed to load room types. Please try again later.');
+                    setIsLoading(false);
+                  });
+              }}
+            >
+              <i className="ri-refresh-line mr-2"></i>
+              Retry
+            </Button>
+          </div>
+        ) : filteredRooms.length > 0 ? (
+          // Success state with data
+          filteredRooms.map((room: RoomTypeExtended) => (
             <Card key={room.type} className="glass overflow-hidden hover-lift hover-shadow transition-all duration-300">
               <div className="aspect-video bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
                 <i className="ri-hotel-bed-line text-4xl text-neutral-400 dark:text-neutral-500"></i>
@@ -206,7 +300,7 @@ export default function RoomTypes() {
                 <div className="mb-3">
                   <span className="text-sm font-medium">Amenities:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {room.amenities.map((amenity) => (
+                    {room.amenities.map((amenity: string) => (
                       <Badge key={amenity} variant="outline" className="font-normal">
                         {amenity}
                       </Badge>
@@ -226,11 +320,14 @@ export default function RoomTypes() {
             </Card>
           ))
         ) : (
+          // Empty state
           <div className="col-span-full flex flex-col items-center justify-center py-10 text-center">
             <i className="ri-search-line text-4xl text-neutral-400 mb-3"></i>
             <h3 className="text-lg font-semibold mb-1">No Room Types Found</h3>
             <p className="text-neutral-500 dark:text-neutral-400 max-w-md">
-              Try adjusting your filters or search query to find room types.
+              {searchQuery || selectedType !== 'all' || (priceRange[0] !== 50 || priceRange[1] !== 600)
+                ? 'Try adjusting your filters or search query to find room types.'
+                : 'There are no room types available.'}
             </p>
           </div>
         )}

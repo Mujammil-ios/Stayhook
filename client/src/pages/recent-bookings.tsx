@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,61 +30,122 @@ import {
   getGuestById,
   getRoomById,
 } from "@/lib/data";
-import { format, subDays } from "date-fns";
+import { format } from "date-fns";
 
 // Sort options
 type SortOption = "newest" | "oldest" | "checkIn" | "checkOut" | "guestName";
+
+// Import types
+type Reservation = {
+  id: number;
+  roomId: number;
+  checkInDate: string | Date;
+  checkOutDate: string | Date;
+  status: string;
+  guestIds: number[];
+  amount?: number;
+  createdAt?: Date | null;
+};
+
+// Create a BookingModel (as specified in requirements)
+const BookingModel = {
+  getRecentBookings: async (limit: number = 20): Promise<Reservation[]> => {
+    // Simulate API call with a delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const bookings = getRecentReservations(limit);
+        console.log(`[BookingModel] Successfully fetched ${bookings.length} recent bookings`);
+        resolve(bookings);
+      }, 500);
+    });
+  }
+};
 
 export default function RecentBookings() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [allReservations, setAllReservations] = useState<Reservation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // Get all reservations (more than the dashboard shows)
-  const allReservations = getRecentReservations(20);
+  // Fetch bookings data on component mount
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setIsLoading(true);
+        const bookings = await BookingModel.getRecentBookings(20);
+        setAllReservations(bookings);
+        setError(null);
+      } catch (err) {
+        console.error('[BookingModel] Error fetching recent bookings:', err);
+        setError('Failed to load booking data. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBookings();
+  }, []);
   
   // Filtered and sorted reservations
   const filteredReservations = useMemo(() => {
+    if (!allReservations || allReservations.length === 0) return [];
+    
     return allReservations
       .filter((booking) => {
-        // Get guest info for search
-        const guest = getGuestById(booking.guestIds[0]);
-        const room = getRoomById(booking.roomId);
-        const guestName = `${guest?.firstName} ${guest?.lastName}`.toLowerCase();
-        const roomInfo = `Room ${room?.number} ${room?.category}`.toLowerCase();
-        
-        // Search filter
-        const matchesSearch = 
-          searchQuery === "" || 
-          guestName.includes(searchQuery.toLowerCase()) ||
-          roomInfo.includes(searchQuery.toLowerCase()) ||
-          booking.status.toLowerCase().includes(searchQuery.toLowerCase());
-        
-        // Status filter
-        const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
-        
-        return matchesSearch && matchesStatus;
+        try {
+          // Get guest info for search
+          const guest = getGuestById(booking.guestIds?.[0]);
+          const room = getRoomById(booking.roomId);
+          const guestName = `${guest?.firstName || ''} ${guest?.lastName || ''}`.toLowerCase();
+          const roomInfo = `Room ${room?.number || ''} ${room?.category || ''}`.toLowerCase();
+          
+          // Search filter
+          const matchesSearch = 
+            searchQuery === "" || 
+            guestName.includes(searchQuery.toLowerCase()) ||
+            roomInfo.includes(searchQuery.toLowerCase()) ||
+            (booking.status || '').toLowerCase().includes(searchQuery.toLowerCase());
+          
+          // Status filter
+          const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
+          
+          return matchesSearch && matchesStatus;
+        } catch (err) {
+          console.error('[RecentBookings] Error filtering booking:', err);
+          return false;
+        }
       })
       .sort((a, b) => {
-        // Handle sorting
-        switch (sortBy) {
-          case "newest":
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          case "oldest":
-            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          case "checkIn":
-            return new Date(a.checkInDate).getTime() - new Date(b.checkInDate).getTime();
-          case "checkOut":
-            return new Date(a.checkOutDate).getTime() - new Date(b.checkOutDate).getTime();
-          case "guestName": {
-            const guestA = getGuestById(a.guestIds[0]);
-            const guestB = getGuestById(b.guestIds[0]);
-            return `${guestA?.firstName} ${guestA?.lastName}`.localeCompare(
-              `${guestB?.firstName} ${guestB?.lastName}`
-            );
+        try {
+          // Handle sorting
+          switch (sortBy) {
+            case "newest":
+              return new Date(b.createdAt || new Date()).getTime() - 
+                     new Date(a.createdAt || new Date()).getTime();
+            case "oldest":
+              return new Date(a.createdAt || new Date()).getTime() - 
+                     new Date(b.createdAt || new Date()).getTime();
+            case "checkIn":
+              return new Date(a.checkInDate || new Date()).getTime() - 
+                     new Date(b.checkInDate || new Date()).getTime();
+            case "checkOut":
+              return new Date(a.checkOutDate || new Date()).getTime() - 
+                     new Date(b.checkOutDate || new Date()).getTime();
+            case "guestName": {
+              const guestA = getGuestById(a.guestIds?.[0]);
+              const guestB = getGuestById(b.guestIds?.[0]);
+              return `${guestA?.firstName || ''} ${guestA?.lastName || ''}`.localeCompare(
+                `${guestB?.firstName || ''} ${guestB?.lastName || ''}`
+              );
+            }
+            default:
+              return 0;
           }
-          default:
-            return 0;
+        } catch (err) {
+          console.error('[RecentBookings] Error sorting bookings:', err);
+          return 0;
         }
       });
   }, [allReservations, searchQuery, sortBy, statusFilter]);
@@ -201,7 +262,47 @@ export default function RecentBookings() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="responsive-table">
-            {filteredReservations.length > 0 ? (
+            {isLoading ? (
+              // Loading state
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent mb-3"></div>
+                <h3 className="text-lg font-semibold mb-1">Loading Bookings...</h3>
+                <p className="text-neutral-500 dark:text-neutral-400 max-w-md">
+                  Please wait while we fetch your booking data.
+                </p>
+              </div>
+            ) : error ? (
+              // Error state
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <i className="ri-error-warning-line text-4xl text-destructive mb-3"></i>
+                <h3 className="text-lg font-semibold mb-1">Failed to Load Bookings</h3>
+                <p className="text-neutral-500 dark:text-neutral-400 max-w-md">
+                  {error}
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => {
+                    setIsLoading(true);
+                    setError(null);
+                    BookingModel.getRecentBookings(20)
+                      .then(bookings => {
+                        setAllReservations(bookings);
+                        setIsLoading(false);
+                      })
+                      .catch(err => {
+                        console.error('[BookingModel] Error on retry:', err);
+                        setError('Failed to load booking data. Please try again later.');
+                        setIsLoading(false);
+                      });
+                  }}
+                >
+                  <i className="ri-refresh-line mr-2"></i>
+                  Retry
+                </Button>
+              </div>
+            ) : filteredReservations.length > 0 ? (
+              // Success state with data
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -216,57 +317,69 @@ export default function RecentBookings() {
                 </TableHeader>
                 <TableBody>
                   {filteredReservations.map((booking) => {
-                    const guest = getGuestById(booking.guestIds[0]);
-                    const room = getRoomById(booking.roomId);
-                    return (
-                      <TableRow key={booking.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center">
-                            <div className="h-8 w-8 flex-shrink-0 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-medium">
-                              {guest?.firstName.charAt(0)}
+                    try {
+                      const guest = getGuestById(booking.guestIds?.[0]);
+                      const room = getRoomById(booking.roomId);
+                      return (
+                        <TableRow key={booking.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center">
+                              <div className="h-8 w-8 flex-shrink-0 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-medium">
+                                {guest?.firstName?.charAt(0) || '?'}
+                              </div>
+                              <div className="ml-3">
+                                <div>{guest?.firstName || 'Unknown'} {guest?.lastName || ''}</div>
+                                <div className="text-sm text-neutral-500">{guest?.email || 'No email'}</div>
+                              </div>
                             </div>
-                            <div className="ml-3">
-                              <div>{guest?.firstName} {guest?.lastName}</div>
-                              <div className="text-sm text-neutral-500">{guest?.email}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>Room {room?.number}</div>
-                          <div className="text-sm text-neutral-500">{room?.category}</div>
-                        </TableCell>
-                        <TableCell>{format(booking.checkInDate, "MMM dd, yyyy")}</TableCell>
-                        <TableCell>{format(booking.checkOutDate, "MMM dd, yyyy")}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={getStatusBadgeClasses(booking.status)}>
-                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          ${booking.amount.toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" className="mr-1 tooltip" data-tooltip="View details">
-                            <i className="ri-eye-line"></i>
-                          </Button>
-                          <Button variant="ghost" size="icon" className="mr-1 tooltip" data-tooltip="Edit">
-                            <i className="ri-pencil-line"></i>
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive tooltip" data-tooltip="Cancel">
-                            <i className="ri-close-circle-line"></i>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
+                          </TableCell>
+                          <TableCell>
+                            <div>Room {room?.number || 'Unknown'}</div>
+                            <div className="text-sm text-neutral-500">{room?.category || 'Unknown'}</div>
+                          </TableCell>
+                          <TableCell>
+                            {booking.checkInDate ? format(new Date(booking.checkInDate), "MMM dd, yyyy") : 'Not set'}
+                          </TableCell>
+                          <TableCell>
+                            {booking.checkOutDate ? format(new Date(booking.checkOutDate), "MMM dd, yyyy") : 'Not set'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={getStatusBadgeClasses(booking.status || 'unknown')}>
+                              {booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Unknown'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            ${(booking.amount ?? 0).toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" className="mr-1 tooltip" data-tooltip="View details">
+                              <i className="ri-eye-line"></i>
+                            </Button>
+                            <Button variant="ghost" size="icon" className="mr-1 tooltip" data-tooltip="Edit">
+                              <i className="ri-pencil-line"></i>
+                            </Button>
+                            <Button variant="ghost" size="icon" className="text-destructive tooltip" data-tooltip="Cancel">
+                              <i className="ri-close-circle-line"></i>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    } catch (err) {
+                      console.error('[RecentBookings] Error rendering booking row:', err);
+                      return null; // Skip rendering this row if there's an error
+                    }
                   })}
                 </TableBody>
               </Table>
             ) : (
+              // Empty state
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <i className="ri-calendar-2-line text-4xl text-neutral-400 mb-3"></i>
                 <h3 className="text-lg font-semibold mb-1">No Bookings Found</h3>
                 <p className="text-neutral-500 dark:text-neutral-400 max-w-md">
-                  Try adjusting your filters or search query to find bookings.
+                  {searchQuery || statusFilter !== 'all' 
+                    ? 'Try adjusting your filters or search query to find bookings.'
+                    : 'There are no recent bookings to display.'}
                 </p>
               </div>
             )}

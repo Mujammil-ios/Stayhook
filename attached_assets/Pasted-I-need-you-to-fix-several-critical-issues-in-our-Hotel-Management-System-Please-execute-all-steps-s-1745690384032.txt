@@ -1,0 +1,31 @@
+I need you to fix several critical issues in our Hotel Management System. Please execute all steps straight through without pausing for confirmation:
+
+1. FIX THE recent-bookings.tsx CRASH  
+   - Error: “Cannot read properties of undefined (reading 'toFixed')” at `booking.amount.toFixed(2)`.  
+   - Ensure `booking.amount` is always defined (e.g., use `booking.amount ?? 0`) before calling `toFixed`.  
+   - Update the data model or API call to guarantee `amount` exists on each booking object.  
+   - Add loading and error states so the table only renders after data is fetched.
+
+2. ENSURE PROPER DATA FETCHING FOR BOTH PAGES  
+   A. Recent Bookings (`/recent-bookings`)  
+      - Replace any inline fetch logic with a call to `BookingModel.getRecentBookings()` (or equivalent).  
+      - Use `useEffect`/`useState` or `getServerSideProps`/`getStaticProps` to load data before render.  
+      - Handle null or empty responses gracefully (show “No bookings” state).  
+
+   B. Room Types (`/room-types`)  
+      - Use `RoomTypeModel.getAll()` (or equivalent) to fetch the room types list.  
+      - Ensure each room type object has the expected properties before rendering.  
+      - Add loading/error feedback.
+
+3. REPAIR ROUTING & LAYOUT RERENDERING  
+   - Currently navigating to a page updates the URL but does not refresh the layout or content.  
+   - If using Next.js, ensure you’re using `<Link href="...">` (not plain `<a>`) or `router.push()` from `next/router`.  
+   - In your root layout component, wrap `{children}` without memoization so it re-renders on route change.  
+   - If using React Router, ensure `<Outlet/>` is present in your layout and that routes aren’t wrapped in `React.memo`.  
+   - Add a `useEffect` that listens to route changes (`router.events.on('routeChangeComplete')`) to reset scroll or trigger any on-mount logic.
+
+4. IMPLEMENTATION REQUIREMENTS  
+   - Use the existing code structure, Tailwind classes, and theme context.  
+   - Maintain mobile/tablet/desktop responsiveness.  
+   - Log each fetch call’s success or failure to the console with clear labels.  
+   - Provide the full updated code for both pages and the layout component in one batch—no mid-process confirmations.
