@@ -10,7 +10,7 @@ export * from './api';
 // Feature-specific services
 // Comment out services that don't exist yet to avoid import errors
 // export * from './propertyService';
-// export * from './roomService';
+export * from './roomService';
 // export * from './bookingService';
 // export * from './guestService';
 // export * from './staffService';

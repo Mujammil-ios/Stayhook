@@ -6,7 +6,7 @@
 
 import type { ApiResponse } from './api';
 import { apiRequest } from './api';
-import type { Room, InsertRoom } from '@/shared/schema';
+import type { Room, InsertRoom } from '@/types'; // Use our types directly
 
 // API endpoints for rooms
 const ENDPOINTS = {
