@@ -167,10 +167,37 @@ async function completeOnboarding(): Promise<OnboardingResponse> {
   }
 }
 
+/**
+ * Start the onboarding process for a new user
+ */
+async function startOnboarding(): Promise<OnboardingResponse> {
+  try {
+    // In a real implementation, this would initialize onboarding state in the API
+    // const response = await api.post('/api/onboarding/start');
+    // return response.data;
+    
+    // For the purpose of this prototype, we'll mock a successful response
+    return {
+      success: true,
+      data: {
+        message: 'Onboarding process started',
+        currentStep: 'business_basics'
+      }
+    };
+  } catch (error: any) {
+    console.error('Error starting onboarding:', error);
+    return {
+      success: false,
+      message: error.message || 'Failed to start onboarding process'
+    };
+  }
+}
+
 export const onboardingService = {
   getOnboardingState,
   saveBusinessBasics,
   savePropertyConfig,
   savePolicies,
-  completeOnboarding
+  completeOnboarding,
+  startOnboarding
 };

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useLocation } from 'wouter';
+import { onboardingService } from '@/shared/services';
 
 // Define user type
 interface User {
@@ -40,6 +42,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [_, setLocation] = useLocation();
 
   // Check for saved auth on mount
   useEffect(() => {
@@ -129,6 +132,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Save to state and localStorage
       setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
+      
+      // Start the onboarding process
+      try {
+        console.log('Starting onboarding process after signup...');
+        const onboardingResult = await onboardingService.startOnboarding();
+        if (onboardingResult.success) {
+          // Redirect to onboarding page
+          setLocation('/onboarding');
+        }
+      } catch (onboardingError) {
+        console.error('Error starting onboarding:', onboardingError);
+        // Even if onboarding fails, we consider signup successful
+      }
       
       return { success: true };
     } catch (error) {

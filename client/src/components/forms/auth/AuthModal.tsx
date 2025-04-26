@@ -3,6 +3,9 @@ import { Modal } from "@/components/ui/modal";
 import { LoginForm, LoginFormData } from "./LoginForm";
 import { SignupForm, SignupFormData } from "./SignupForm";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuthContext';
+import { onboardingService } from "@/shared/services";
 
 type AuthMode = "login" | "signup";
 
@@ -16,6 +19,8 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { signup, login } = useAuth();
+  const [_, setLocation] = useLocation();
 
   const handleLoginSubmit = (data: LoginFormData) => {
     setIsLoading(true);

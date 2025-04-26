@@ -1,0 +1,50 @@
+I need you to implement several new features and fixes in our existing Hotel Management System—apply all changes directly to the current codebase in one pass, without pausing for confirmations:
+
+1. TRIGGER & LOCATE ONBOARDING FLOW  
+   - Ensure that immediately after the user clicks the “Sign Up” button and the account is created, the onboarding wizard opens automatically.  
+   - Update the signup handler to call `onboardingService.startOnboarding()` (or equivalent) and navigate to the wizard component/modal.  
+   - Verify that the wizard is mounted at `/onboarding` or as a modal on the current page, so it’s easy to find in the code.
+
+2. CREATE RESERVATION & INVOICING FLOW  
+   - Under `/features/reservation`, implement:  
+     • A full-screen **Calendar View** (Day, Week, Month) using an existing calendar library or custom implementation.  
+     • Controls to switch views.  
+     • On time-slot click, open the **Create Reservation** modal pre-filled with that date/time.  
+     • Fields: Customer Name; Aadhar No. (with image upload); Mobile No.; Vehicle No.; Check-in/Check-out Dates; Travelling From/To; Gender & Age counts; Live Customer Photo (optional); Contact & Address; Nationality; up to 3 guests per room.  
+     • On submit, call `reservationService.createReservation()`.  
+
+   **After reservation success**:  
+     - Automatically navigate to or open a **Create Invoice** page/modal under `/features/invoice`.  
+     - Invoicing form fields: Booking ID; Customer details; Room details; Dates; Rates; Taxes; Discounts; Total amount; Payment status.  
+     - Generate a responsive invoice preview and provide a “Download PDF” button.  
+     - Call `invoiceService.generateInvoice(bookingId)` (mock or real) and display the returned data.  
+     - Ensure the invoice component is fully responsive across mobile/tablet/desktop.
+
+3. MAKE “ADD GUEST/USER” FORM RESPONSIVE  
+   - In `/features/guest/Form.tsx`, refactor to use Tailwind’s responsive utilities:  
+     • Stack inputs on mobile (`w-full`, `space-y-4`), grid on larger screens (`grid grid-cols-2 gap-4`).  
+     • Ensure file-upload, date-pickers, and photo upload adapt fluidly.  
+   - Test at 375×667, 768×1024, and 1440×900 breakpoints.
+
+4. EXTEND FEATURE-BASED FOLDER STRUCTURE & API SERVICES  
+   - For Analytics, Room Management, Property, Staff, Invoice:  
+     • Create folders under `/features` with `List`, `Details`, `Form`, `Modal` components.  
+     • Add a `styles.ts` (or `*.module.css`) file per feature, mirroring booking’s conventions.  
+   - In `/shared/services`, add or extend:  
+     • `analyticsService.getMetrics()`  
+     • `roomService.getAll()`, `roomService.getAvailability()`  
+     • `propertyService.getAll()`  
+     • `staffService.*()`  
+     • `invoiceService.generateInvoice()`  
+   - Ensure all components use these services via React Query (`useQuery`/`useMutation`) for loading, mutations, and error/loading states.
+
+5. IMPLEMENTATION REQUIREMENTS  
+   - Work entirely within the existing codebase—do **not** scaffold a new project.  
+   - Follow current naming conventions, folder structure, and component patterns.  
+   - Maintain full responsiveness at mobile/tablet/desktop breakpoints for all new UI (including calendar, forms, and invoice).  
+   - Provide the complete updated code for:  
+     • Signup handler/onboarding trigger  
+     • `/features/reservation` calendar + reservation form + post-booking invoice flow  
+     • Responsive guest form updates  
+     • All new feature folders, components, styles, and service classes  
+   - Deliver everything in **one** batch, ready to merge—no mid-stream confirmations.
