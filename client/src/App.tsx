@@ -1,7 +1,4 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Layout from "@/components/layout/Layout";
@@ -15,8 +12,7 @@ import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import Help from "@/pages/help";
 import FormsDemo from "@/pages/forms-demo";
-import { ThemeProvider } from "@/hooks/useThemeContext";
-import { AuthProvider, useAuth } from "@/hooks/useAuthContext";
+import { useAuth } from "@/hooks/useAuthContext";
 
 // Import auth pages
 import Login from "@/pages/auth/login";
@@ -24,12 +20,6 @@ import Signup from "@/pages/auth/signup";
 import ForgotPassword from "@/pages/auth/forgot-password";
 
 function Router() {
-  return (
-    <Routes />
-  );
-}
-
-function Routes() {
   const { isAuthenticated, isLoading } = useAuth();
   
   // Show loading spinner while checking auth
@@ -83,16 +73,9 @@ function Routes() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system">
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </QueryClientProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <TooltipProvider>
+      <Router />
+    </TooltipProvider>
   );
 }
 
