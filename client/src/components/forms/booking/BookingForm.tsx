@@ -53,6 +53,7 @@ export interface BookingFormData {
   advancePayment: string;
   termsAccepted: boolean;
   notes: string;
+  calculatedTotal?: string; // Optional field for calculated total
 }
 
 export function BookingForm({ 

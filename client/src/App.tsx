@@ -31,6 +31,7 @@ function Router() {
         <Route path="/analytics" component={Analytics} />
         <Route path="/settings" component={Settings} />
         <Route path="/help" component={Help} />
+        <Route path="/forms-demo" component={FormsDemo} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
