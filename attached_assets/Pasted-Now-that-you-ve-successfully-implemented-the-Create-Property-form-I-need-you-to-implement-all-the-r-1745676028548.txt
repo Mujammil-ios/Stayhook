@@ -1,0 +1,101 @@
+Now that you've successfully implemented the Create Property form, I need you to implement all the remaining forms for our hotel management SaaS system. Using the same technical approach (modal dialogs with validation), implement the following forms in order of priority:
+
+1. Login/Signup Forms
+   - Create a login form with:
+     * Email/username field (required)
+     * Password field with toggle visibility (required)
+     * "Remember me" checkbox
+     * Login button that validates and logs form data
+   - Create a signup form with:
+     * Name field (required)
+     * Email field (required with email validation)
+     * Password field (required with strength indicator)
+     * Confirm password field (must match password)
+     * Terms & conditions checkbox (required)
+     * Signup button that validates and logs form data
+
+2. Room Management Forms
+   - Create "Add New Room" form with:
+     * Room number (required)
+     * Room category dropdown (required)
+     * Floor number
+     * Capacity fields (adults/children)
+     * Base price (required)
+     * Seasonal price options (optional)
+     * Room status dropdown (Available, Occupied, Maintenance, Cleaning)
+     * Room amenities selection (checkboxes)
+     * Room photos upload (max 20)
+     * Save button that validates and logs data
+
+   - Create "Edit Room" form (same fields as Add Room, pre-populated)
+
+3. Guest/Customer Forms
+   - Create "Add New Guest" form with:
+     * Name (required)
+     * Aadhar number with image upload option
+     * Mobile number (required with validation)
+     * Vehicle number
+     * Check-in/check-out dates (required)
+     * Traveling from/to fields
+     * Gender selection
+     * Age count fields (Male, Female, Child)
+     * Optional live photo capture
+     * Contact details and address
+     * Nationality dropdown
+     * Save button that validates and logs data
+     
+   - Add "AutoFill" functionality on mobile number entry
+     * Show mock data populating other fields when a number is entered
+
+4. Booking Management Forms
+   - Create "Confirm Booking" form with:
+     * Guest selection dropdown (linking to guest data)
+     * Room selection with availability display
+     * Date range confirmation
+     * Price display with breakdown
+     * Price override checkbox with manual entry field
+     * Coupon/discount code field
+     * Payment method selection
+     * Terms acceptance checkbox
+     * Confirm button that validates and logs data
+
+5. Staff Management Forms
+   - Create "Add Staff" form with:
+     * Staff ID (auto-generated)
+     * Name (required)
+     * Designation dropdown (required)
+     * Joining date (required)
+     * Contact information
+     * Salary details
+     * Access permissions checkboxes
+     * Photo upload
+     * Save button that validates and logs data
+
+6. Property Profile Edit Form
+   - Create "Edit Property" form that includes all fields from the Create Property form, pre-populated with mock data
+   - Add additional sections for:
+     * Property operating hours
+     * Contact persons list with add/edit/delete functionality
+     * Tax information section
+     * Save button that validates and logs data
+
+For all forms:
+- Use the same modal component and styling approach as the Create Property form
+- Implement appropriate validation for all required fields
+- Log form data to console on successful submission
+- Show success message after submission
+- Forms should close after successful submission or on cancel
+- Keep consistent styling with the rest of the application
+- Add appropriate icons to form fields
+- Ensure all forms are responsive
+
+Implement these forms so they can be triggered from the appropriate places in the UI:
+- Login/Signup forms from the header/navbar
+- Add/Edit Room from Room Management page
+- Add Guest and Confirm Booking from Reservation System page
+- Add Staff from Staff Portal page
+- Edit Property from Property Profile page
+
+Finally, after implementing all forms, create a single JavaScript function that can be called to open any of these forms based on a string parameter (e.g., openForm('addRoom'), openForm('editProperty'), etc.)
+
+Please provide the complete HTML, CSS, and JavaScript code needed for each form component.

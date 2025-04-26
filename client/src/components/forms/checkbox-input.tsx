@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface CheckboxInputProps {
   id: string;
-  label: string;
+  label: React.ReactNode;
   checked: boolean;
   onChange: (checked: boolean) => void;
   required?: boolean;
