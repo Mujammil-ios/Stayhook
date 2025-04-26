@@ -6,6 +6,7 @@ interface TextInputProps {
   id: string;
   label: string;
   value: string;
+  name?: string;  // Make name optional with default to id
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   required?: boolean;
@@ -16,7 +17,7 @@ interface TextInputProps {
   disabled?: boolean;
   maxLength?: number;
   autoComplete?: string;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (() => void) | ((e: React.FocusEvent<HTMLInputElement>) => void);
   icon?: string;
 }
 
@@ -24,6 +25,7 @@ export function TextInput({
   id,
   label,
   value,
+  name,
   onChange,
   placeholder,
   required = false,

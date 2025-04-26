@@ -7,12 +7,14 @@ interface GuestModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: Partial<GuestFormData>;
+  isEditing?: boolean;
 }
 
 export function GuestModal({ 
   isOpen, 
   onClose, 
-  initialData 
+  initialData,
+  isEditing = false 
 }: GuestModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -30,8 +32,8 @@ export function GuestModal({
       
       // Show success toast
       toast({
-        title: "Guest added successfully",
-        description: `${data.name} has been registered as a guest.`,
+        title: isEditing ? "Guest updated" : "Guest registered",
+        description: `${data.firstName} ${data.lastName} has been ${isEditing ? 'updated' : 'registered'} successfully.`,
         variant: "default",
       });
       
@@ -49,8 +51,14 @@ export function GuestModal({
       <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-4">
         <i className="ri-check-line text-3xl text-green-600 dark:text-green-400"></i>
       </div>
-      <h3 className="text-xl font-medium mb-2">Guest Registered Successfully!</h3>
-      <p className="text-neutral-500 mb-4">The guest information has been saved to the system.</p>
+      <h3 className="text-xl font-medium mb-2">
+        {isEditing ? 'Guest Updated Successfully!' : 'Guest Registered Successfully!'}
+      </h3>
+      <p className="text-neutral-500 mb-4">
+        {isEditing 
+          ? 'The guest information has been updated in the system.' 
+          : 'The new guest has been added to your database.'}
+      </p>
     </div>
   );
 
@@ -58,8 +66,8 @@ export function GuestModal({
     <Modal
       isOpen={isOpen}
       onClose={success ? () => {} : onClose}
-      title={success ? "Success" : "Add New Guest"}
-      size="lg"
+      title={success ? "Success" : isEditing ? "Edit Guest" : "Register New Guest"}
+      size="xl"
       closeOnClickOutside={!isLoading && !success}
     >
       {success ? (

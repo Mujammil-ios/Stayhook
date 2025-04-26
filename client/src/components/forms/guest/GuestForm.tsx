@@ -1,33 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { TextInput } from "../text-input";
-import { DatePicker } from "../date-picker";
-import { RadioGroup, RadioOption } from "../radio-group";
-import { FileUpload } from "../file-upload";
-import { Button } from "@/components/ui/button";
 import { SelectInput, SelectOption } from "../select-input";
-import { Validators, validateForm, getFieldError, ValidationErrors } from "@/lib/validators";
+import { DatePicker } from "../date-picker";
+import { Button } from "@/components/ui/button";
+import { FileUpload } from "../file-upload";
 import { FieldGroup } from "../form-field";
+import { Validators, validateForm, getFieldError, ValidationErrors } from "@/lib/validators";
 
-// Gender options
-const genderOptions: RadioOption[] = [
-  { value: "male", label: "Male" },
-  { value: "female", label: "Female" },
+// ID proof type options
+const idProofTypeOptions: SelectOption[] = [
+  { value: "passport", label: "Passport" },
+  { value: "drivingLicense", label: "Driving License" },
+  { value: "nationalId", label: "National ID" },
+  { value: "voterCard", label: "Voter Card" },
   { value: "other", label: "Other" },
 ];
 
-// Nationality options
-const nationalityOptions: SelectOption[] = [
-  { value: "india", label: "India" },
-  { value: "usa", label: "United States" },
-  { value: "uk", label: "United Kingdom" },
-  { value: "canada", label: "Canada" },
-  { value: "australia", label: "Australia" },
-  { value: "germany", label: "Germany" },
-  { value: "france", label: "France" },
-  { value: "japan", label: "Japan" },
-  { value: "china", label: "China" },
-  { value: "other", label: "Other" },
-];
+export interface GuestFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  idProofType: string;
+  idProofFiles: File[];
+  vehicleNumber?: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  checkInDate: Date;
+  checkOutDate: Date;
+  specialRequests?: string;
+}
 
 interface GuestFormProps {
   onSubmit: (data: GuestFormData) => void;
@@ -36,91 +41,74 @@ interface GuestFormProps {
   isLoading?: boolean;
 }
 
-export interface GuestFormData {
-  name: string;
-  aadharNumber: string;
-  aadharImage: File[];
-  mobileNumber: string;
-  vehicleNumber: string;
-  checkInDate: Date | undefined;
-  checkOutDate: Date | undefined;
-  travelingFrom: string;
-  travelingTo: string;
-  gender: string;
-  maleCount: string;
-  femaleCount: string;
-  childCount: string;
-  email: string;
-  address: string;
-  nationality: string;
-}
-
-export function GuestForm({ 
-  onSubmit, 
-  onCancel, 
+export function GuestForm({
+  onSubmit,
+  onCancel,
   initialData,
-  isLoading = false 
+  isLoading = false,
 }: GuestFormProps) {
+  // Set default dates if not provided
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+
   // Form state
   const [formData, setFormData] = useState<GuestFormData>({
-    name: initialData?.name || "",
-    aadharNumber: initialData?.aadharNumber || "",
-    aadharImage: initialData?.aadharImage || [],
-    mobileNumber: initialData?.mobileNumber || "",
-    vehicleNumber: initialData?.vehicleNumber || "",
-    checkInDate: initialData?.checkInDate,
-    checkOutDate: initialData?.checkOutDate,
-    travelingFrom: initialData?.travelingFrom || "",
-    travelingTo: initialData?.travelingTo || "",
-    gender: initialData?.gender || "male",
-    maleCount: initialData?.maleCount || "0",
-    femaleCount: initialData?.femaleCount || "0",
-    childCount: initialData?.childCount || "0",
+    firstName: initialData?.firstName || "",
+    lastName: initialData?.lastName || "",
     email: initialData?.email || "",
+    phone: initialData?.phone || "",
+    idProofType: initialData?.idProofType || "passport",
+    idProofFiles: initialData?.idProofFiles || [],
+    vehicleNumber: initialData?.vehicleNumber || "",
     address: initialData?.address || "",
-    nationality: initialData?.nationality || "india",
+    city: initialData?.city || "",
+    state: initialData?.state || "",
+    postalCode: initialData?.postalCode || "",
+    country: initialData?.country || "India",
+    checkInDate: initialData?.checkInDate || today,
+    checkOutDate: initialData?.checkOutDate || tomorrow,
+    specialRequests: initialData?.specialRequests || "",
   });
 
   // Form validation
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  // Auto-fill triggered
-  const [hasAutoFilled, setHasAutoFilled] = useState(false);
-
   // Validation rules
   const validationRules = {
-    name: [
-      Validators.required("Name is required"),
-      Validators.minLength(2, "Name must be at least 2 characters"),
+    firstName: [
+      Validators.required("First name is required"),
+      Validators.pattern(/^[a-zA-Z ]+$/, "Only alphabets are allowed"),
     ],
-    aadharNumber: [
-      Validators.pattern(/^\d{12}$/, "Aadhar number must be 12 digits"),
-    ],
-    mobileNumber: [
-      Validators.required("Mobile number is required"),
-      Validators.pattern(/^[6-9]\d{9}$/, "Please enter a valid 10-digit mobile number"),
-    ],
-    vehicleNumber: [
-      Validators.pattern(/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/, "Please enter a valid vehicle number (e.g., MH02AB1234)"),
-    ],
-    checkInDate: [
-      Validators.required("Check-in date is required"),
-    ],
-    checkOutDate: [
-      Validators.required("Check-out date is required"),
-    ],
-    maleCount: [
-      Validators.pattern(/^\d+$/, "Must be a number"),
-    ],
-    femaleCount: [
-      Validators.pattern(/^\d+$/, "Must be a number"),
-    ],
-    childCount: [
-      Validators.pattern(/^\d+$/, "Must be a number"),
+    lastName: [
+      Validators.required("Last name is required"),
+      Validators.pattern(/^[a-zA-Z ]+$/, "Only alphabets are allowed"),
     ],
     email: [
+      Validators.required("Email is required"),
       Validators.email("Please enter a valid email address"),
+    ],
+    phone: [
+      Validators.required("Phone number is required"),
+      Validators.pattern(/^[0-9]{10,15}$/, "Please enter a valid phone number"),
+    ],
+    address: [
+      Validators.required("Address is required"),
+    ],
+    city: [
+      Validators.required("City is required"),
+      Validators.pattern(/^[a-zA-Z ]+$/, "Only alphabets are allowed"),
+    ],
+    state: [
+      Validators.required("State is required"),
+    ],
+    postalCode: [
+      Validators.required("Postal code is required"),
+      Validators.pattern(/^[a-zA-Z0-9 -]{5,10}$/, "Please enter a valid postal code"),
+    ],
+    country: [
+      Validators.required("Country is required"),
     ],
   };
 
@@ -139,30 +127,6 @@ export function GuestForm({
     setErrors(filteredErrors);
   }, [formData, touched]);
 
-  // Auto-fill on mobile number
-  useEffect(() => {
-    // Only trigger if user has entered a full mobile number and hasn't auto-filled yet
-    if (formData.mobileNumber.length === 10 && !hasAutoFilled) {
-      // Simulate API call for auto-fill
-      if (formData.mobileNumber === "9876543210") {
-        setTimeout(() => {
-          // Mock auto-fill data
-          setFormData(prev => ({
-            ...prev,
-            name: "Rahul Sharma",
-            email: "rahul.sharma@example.com",
-            address: "123 Main Street, Mumbai, Maharashtra",
-            aadharNumber: "123456789012",
-          }));
-          setHasAutoFilled(true);
-          
-          // Show toast or notification that data was auto-filled
-          console.log("Auto-filled guest information based on mobile number");
-        }, 500);
-      }
-    }
-  }, [formData.mobileNumber, hasAutoFilled]);
-
   // Handle change for text inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -174,36 +138,21 @@ export function GuestForm({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle change for radio inputs
-  const handleRadioChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Handle change for date inputs
+  // Handle change for date picker
   const handleDateChange = (name: string, value: Date | undefined) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (value) {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
-  // Handle file upload
-  const handleFileUpload = (files: File[]) => {
-    setFormData(prev => ({ ...prev, aadharImage: files }));
+  // Handle change for file upload
+  const handleFileChange = (files: File[]) => {
+    setFormData(prev => ({ ...prev, idProofFiles: files }));
   };
 
   // Mark field as touched on blur
   const handleBlur = (name: string) => {
     setTouched(prev => ({ ...prev, [name]: true }));
-  };
-
-  // Handle live photo capture
-  const handleCapturePhoto = () => {
-    // This would typically involve accessing the webcam and capturing a photo
-    console.log("Photo capture triggered");
-    // In a real implementation, you would:
-    // 1. Access the webcam
-    // 2. Show a preview
-    // 3. Capture the image
-    // 4. Convert to a File object
-    // 5. Add to the formData
   };
 
   // Submit form
@@ -221,65 +170,180 @@ export function GuestForm({
     const validationErrors = validateForm(formData, validationRules);
     setErrors(validationErrors);
 
-    // Submit if no errors
+    // If no errors, submit the form
     if (Object.keys(validationErrors).length === 0) {
+      console.log("Guest form submitted with data:", formData);
       onSubmit(formData);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn">
+      <h3 className="text-lg font-medium mb-4">Personal Information</h3>
+      
       <FieldGroup>
         <TextInput
-          id="name"
-          label="Full Name"
-          value={formData.name}
+          id="firstName"
+          label="First Name"
+          name="firstName"
+          value={formData.firstName}
           onChange={handleChange}
-          onBlur={() => handleBlur("name")}
-          placeholder="Enter guest's full name"
+          onBlur={() => handleBlur("firstName")}
+          placeholder="Enter first name"
           required
-          error={getFieldError("name", errors)}
+          error={getFieldError("firstName", errors)}
           icon="ri-user-line"
         />
 
         <TextInput
-          id="mobileNumber"
-          label="Mobile Number"
-          value={formData.mobileNumber}
+          id="lastName"
+          label="Last Name"
+          name="lastName"
+          value={formData.lastName}
           onChange={handleChange}
-          onBlur={() => handleBlur("mobileNumber")}
-          placeholder="Enter 10-digit mobile number"
+          onBlur={() => handleBlur("lastName")}
+          placeholder="Enter last name"
           required
-          error={getFieldError("mobileNumber", errors)}
-          type="tel"
-          icon="ri-phone-line"
-          hint="Enter 9876543210 to see auto-fill demo"
+          error={getFieldError("lastName", errors)}
+          icon="ri-user-line"
         />
       </FieldGroup>
 
       <FieldGroup>
         <TextInput
-          id="aadharNumber"
-          label="Aadhar Number"
-          value={formData.aadharNumber}
+          id="email"
+          label="Email"
+          name="email"
+          value={formData.email}
           onChange={handleChange}
-          onBlur={() => handleBlur("aadharNumber")}
-          placeholder="Enter 12-digit Aadhar number"
-          error={getFieldError("aadharNumber", errors)}
-          icon="ri-government-line"
+          onBlur={() => handleBlur("email")}
+          placeholder="Enter email address"
+          required
+          error={getFieldError("email", errors)}
+          icon="ri-mail-line"
         />
 
-        <FileUpload
-          id="aadharImage"
-          label="Aadhar Card Image"
-          value={formData.aadharImage}
-          onChange={handleFileUpload}
-          maxFiles={1}
-          accept="image/*"
-          hint="Upload a scanned copy or photo of Aadhar card"
+        <TextInput
+          id="phone"
+          label="Phone Number"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          onBlur={() => handleBlur("phone")}
+          placeholder="Enter phone number"
+          required
+          error={getFieldError("phone", errors)}
+          icon="ri-phone-line"
         />
       </FieldGroup>
 
+      <div className="space-y-4">
+        <h4 className="font-medium">ID Proof</h4>
+        <FieldGroup>
+          <SelectInput
+            id="idProofType"
+            label="ID Type"
+            value={formData.idProofType}
+            onChange={(value) => handleSelectChange("idProofType", value)}
+            options={idProofTypeOptions}
+            required
+          />
+          
+          <TextInput
+            id="vehicleNumber"
+            label="Vehicle Number (if any)"
+            name="vehicleNumber"
+            value={formData.vehicleNumber || ""}
+            onChange={handleChange}
+            placeholder="Enter vehicle number"
+            icon="ri-car-line"
+          />
+        </FieldGroup>
+
+        <FileUpload
+          id="idProofFiles"
+          label="Upload ID Proof"
+          value={formData.idProofFiles}
+          onChange={handleFileChange}
+          accept="image/*,.pdf"
+          maxFiles={2}
+          hint="Please upload a scanned copy of your ID (max 2 files)"
+        />
+      </div>
+
+      <h3 className="text-lg font-medium mt-8 mb-4">Address Information</h3>
+      
+      <TextInput
+        id="address"
+        label="Address"
+        name="address"
+        value={formData.address}
+        onChange={handleChange}
+        onBlur={() => handleBlur("address")}
+        placeholder="Enter street address"
+        required
+        error={getFieldError("address", errors)}
+        icon="ri-home-6-line"
+      />
+
+      <FieldGroup>
+        <TextInput
+          id="city"
+          label="City"
+          name="city"
+          value={formData.city}
+          onChange={handleChange}
+          onBlur={() => handleBlur("city")}
+          placeholder="Enter city"
+          required
+          error={getFieldError("city", errors)}
+          icon="ri-building-line"
+        />
+
+        <TextInput
+          id="state"
+          label="State"
+          name="state"
+          value={formData.state}
+          onChange={handleChange}
+          onBlur={() => handleBlur("state")}
+          placeholder="Enter state/province"
+          required
+          error={getFieldError("state", errors)}
+          icon="ri-map-pin-line"
+        />
+      </FieldGroup>
+
+      <FieldGroup>
+        <TextInput
+          id="postalCode"
+          label="Postal Code"
+          name="postalCode"
+          value={formData.postalCode}
+          onChange={handleChange}
+          onBlur={() => handleBlur("postalCode")}
+          placeholder="Enter postal/zip code"
+          required
+          error={getFieldError("postalCode", errors)}
+          icon="ri-mail-line"
+        />
+
+        <TextInput
+          id="country"
+          label="Country"
+          name="country"
+          value={formData.country}
+          onChange={handleChange}
+          onBlur={() => handleBlur("country")}
+          placeholder="Enter country"
+          required
+          error={getFieldError("country", errors)}
+          icon="ri-earth-line"
+        />
+      </FieldGroup>
+
+      <h3 className="text-lg font-medium mt-8 mb-4">Stay Information</h3>
+      
       <FieldGroup>
         <DatePicker
           id="checkInDate"
@@ -287,7 +351,6 @@ export function GuestForm({
           value={formData.checkInDate}
           onChange={(date) => handleDateChange("checkInDate", date)}
           required
-          error={getFieldError("checkInDate", errors)}
           minDate={new Date()}
         />
 
@@ -297,134 +360,18 @@ export function GuestForm({
           value={formData.checkOutDate}
           onChange={(date) => handleDateChange("checkOutDate", date)}
           required
-          error={getFieldError("checkOutDate", errors)}
-          minDate={formData.checkInDate || new Date()}
+          minDate={formData.checkInDate}
         />
-      </FieldGroup>
-
-      <FieldGroup>
-        <TextInput
-          id="vehicleNumber"
-          label="Vehicle Number"
-          value={formData.vehicleNumber}
-          onChange={handleChange}
-          onBlur={() => handleBlur("vehicleNumber")}
-          placeholder="Enter vehicle registration number"
-          error={getFieldError("vehicleNumber", errors)}
-          icon="ri-car-line"
-        />
-
-        <SelectInput
-          id="nationality"
-          label="Nationality"
-          value={formData.nationality}
-          onChange={(value) => handleSelectChange("nationality", value)}
-          options={nationalityOptions}
-          placeholder="Select nationality"
-        />
-      </FieldGroup>
-
-      <FieldGroup>
-        <TextInput
-          id="travelingFrom"
-          label="Traveling From"
-          value={formData.travelingFrom}
-          onChange={handleChange}
-          placeholder="City/Town/Location"
-          icon="ri-map-pin-line"
-        />
-
-        <TextInput
-          id="travelingTo"
-          label="Traveling To"
-          value={formData.travelingTo}
-          onChange={handleChange}
-          placeholder="City/Town/Location"
-          icon="ri-map-pin-line"
-        />
-      </FieldGroup>
-
-      <div className="rounded-md border border-neutral-200 dark:border-neutral-700 p-4 bg-neutral-50 dark:bg-neutral-800/50">
-        <h3 className="text-sm font-medium mb-3">Guest Details</h3>
-        
-        <RadioGroup
-          id="gender"
-          label="Gender"
-          value={formData.gender}
-          onChange={(value) => handleRadioChange("gender", value)}
-          options={genderOptions}
-          inline
-        />
-        
-        <div className="grid grid-cols-3 gap-4 mt-4">
-          <TextInput
-            id="maleCount"
-            label="Male Guests"
-            value={formData.maleCount}
-            onChange={handleChange}
-            onBlur={() => handleBlur("maleCount")}
-            type="number"
-            error={getFieldError("maleCount", errors)}
-            icon="ri-men-line"
-          />
-          
-          <TextInput
-            id="femaleCount"
-            label="Female Guests"
-            value={formData.femaleCount}
-            onChange={handleChange}
-            onBlur={() => handleBlur("femaleCount")}
-            type="number"
-            error={getFieldError("femaleCount", errors)}
-            icon="ri-women-line"
-          />
-          
-          <TextInput
-            id="childCount"
-            label="Children"
-            value={formData.childCount}
-            onChange={handleChange}
-            onBlur={() => handleBlur("childCount")}
-            type="number"
-            error={getFieldError("childCount", errors)}
-            icon="ri-parent-line"
-          />
-        </div>
-      </div>
-
-      <FieldGroup>
-        <TextInput
-          id="email"
-          label="Email Address"
-          value={formData.email}
-          onChange={handleChange}
-          onBlur={() => handleBlur("email")}
-          placeholder="Enter email address"
-          error={getFieldError("email", errors)}
-          type="email"
-          icon="ri-mail-line"
-        />
-
-        <div>
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="w-full h-10 mt-6"
-            onClick={handleCapturePhoto}
-          >
-            <i className="ri-camera-line mr-2"></i>
-            Capture Live Photo
-          </Button>
-        </div>
       </FieldGroup>
 
       <TextInput
-        id="address"
-        label="Address"
-        value={formData.address}
+        id="specialRequests"
+        label="Special Requests"
+        name="specialRequests"
+        value={formData.specialRequests || ""}
         onChange={handleChange}
-        placeholder="Enter full address"
-        icon="ri-home-line"
+        placeholder="Enter any special requests or requirements"
+        icon="ri-file-list-3-line"
       />
 
       <div className="flex justify-end space-x-3">
@@ -445,7 +392,7 @@ export function GuestForm({
               Saving...
             </>
           ) : (
-            "Add Guest"
+            "Register Guest"
           )}
         </Button>
       </div>

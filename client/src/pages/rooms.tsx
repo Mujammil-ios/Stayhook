@@ -234,6 +234,12 @@ const Rooms = () => {
           </div>
         </TabsContent>
       </Tabs>
+      
+      {/* Room Modal */}
+      <RoomModal 
+        isOpen={isRoomModalOpen}
+        onClose={() => setIsRoomModalOpen(false)}
+      />
     </div>
   );
 };

@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { GuestModal } from "@/components/forms/guest/GuestModal";
 
 const Reservations = () => {
   const today = new Date();
@@ -27,6 +29,8 @@ const Reservations = () => {
   
   const [roomType, setRoomType] = useState("all");
   const [search, setSearch] = useState("");
+  const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
+  const { toast } = useToast();
   
   // Get unique room types
   const roomTypes = Array.from(new Set(roomsData.map(room => room.category)));
@@ -149,7 +153,11 @@ const Reservations = () => {
                 <hr className="flex-grow" />
               </div>
               
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setIsGuestModalOpen(true)}
+              >
                 <i className="ri-user-add-line mr-2"></i>
                 Add New Guest
               </Button>
@@ -210,6 +218,16 @@ const Reservations = () => {
           </Card>
         </div>
       </div>
+
+      {/* Guest Modal */}
+      <GuestModal 
+        isOpen={isGuestModalOpen}
+        onClose={() => setIsGuestModalOpen(false)}
+        initialData={{
+          checkInDate: selectedDates.from,
+          checkOutDate: selectedDates.to || addDays(selectedDates.from, 1)
+        }}
+      />
     </div>
   );
 };
