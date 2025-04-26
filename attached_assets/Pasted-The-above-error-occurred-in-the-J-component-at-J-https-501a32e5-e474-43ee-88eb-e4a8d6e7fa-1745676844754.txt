@@ -1,0 +1,28 @@
+The above error occurred in the <J> component:
+
+    at J (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/next-themes.js?v=f3212ddc:42:18)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+at J (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/next-themes.js?v=f3212ddc:42:18)
+at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+at t.value (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Cannot read properties of null (reading 'useContext')
+at Object.useContext (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-QCHXOAYK.js?v=f3212ddc:1062:29)
+at J (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/next-themes.js?v=f3212ddc:42:18)
+at renderWithHooks (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=0b8645f2:11548:26)
+at mountIndeterminateComponent (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=0b8645f2:14926:21)
+at beginWork (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=0b8645f2:15914:22)
+at beginWork$1 (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=0b8645f2:19753:22)
+at performUnitOfWork (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=0b8645f2:19198:20)
+at workLoopSync (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=0b8645f2:19137:13)
+at renderRootSync (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=0b8645f2:19116:15)
+at recoverFromConcurrentError (https://501a32e5-e474-43ee-88eb-e4a8d6e7fac7-00-pe6bbbq8pf7s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=0b8645f2:18736:28)

@@ -1,0 +1,46 @@
+I see you're experiencing React hook errors related to next-themes and context. Let's fix these issues and add the remaining functionality to your hotel management SaaS application.
+
+1. First, fix the critical React hook errors:
+   - The error "Invalid hook call" and "Cannot read properties of null (reading 'useContext')" indicates an issue with the theme provider implementation
+   - Remove the dependency on next-themes or properly implement it with a ThemeProvider component
+   - Replace it with a simpler theme implementation using vanilla JavaScript or a properly configured React context
+   - Make sure all hooks are only called inside function components
+
+2. Fix the settings page issues:
+   - Implement a proper Settings component that doesn't rely on problematic hooks
+   - Create a simple theme toggle that uses localStorage instead of context if needed
+   - Add profile settings, notification preferences, and language options
+
+3. Add login and signup functionality:
+   - Create a proper Login form with email/username and password fields
+   - Add a Signup form with appropriate fields and validation
+   - Implement mock authentication flow using localStorage
+   - Add "forgot password" functionality
+   - Set up protected routes that redirect to login if not authenticated
+
+4. Implement missing policy pages:
+   - Create a Policy Editor component for creating/editing policies
+   - Add a Policy Viewer component for displaying existing policies
+   - Implement a Policy List page showing all property policies
+   - Include templates for common policies (cancellation, house rules, etc.)
+
+5. Add click listeners to dashboard elements:
+   - Ensure all cards, buttons, and interactive elements have proper click handlers
+   - Connect statistics cards to appropriate modal forms or detail views
+   - Make notification items clickable with proper detail views
+   - Add click handlers to calendar events that show booking details
+
+6. Fix any remaining UI issues:
+   - Ensure consistent styling across all components
+   - Fix any responsive design issues on small screens
+   - Make sure all forms are accessible and keyboard navigable
+   - Add loading states and error handling to all interactive elements
+
+7. Complete the multi-step property onboarding:
+   - Ensure all 9 steps work properly with validation and data persistence
+   - Add progress indicators and navigation between steps
+   - Implement "save and continue later" functionality
+
+Please ensure all fixed components follow the same design language and coding patterns as the rest of the application. Don't use any external libraries that aren't already properly integrated. For theme implementation, use a simple approach that doesn't rely on external context providers until the app structure can properly support them.
+
+When implementing these fixes, please provide complete code solutions rather than just concepts or snippets.
