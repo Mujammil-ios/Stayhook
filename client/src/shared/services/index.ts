@@ -11,8 +11,8 @@ export * from './api';
 // Comment out services that don't exist yet to avoid import errors
 // export * from './propertyService';
 export * from './roomService';
-// export * from './bookingService';
-// export * from './guestService';
+export * from './guestService';
+export * from './reservationService';
 // export * from './staffService';
 // export * from './analyticsService';
 export * from './onboardingService';
