@@ -1,12 +1,12 @@
 /**
  * OnboardingProgress Component
  * 
- * Displays a progress stepper for the onboarding process
+ * Displays a vertical progress stepper for the onboarding process
+ * Design based on provided screenshots
  */
 
-import { useState } from 'react';
 import { OnboardingStep } from '../types/index';
-import { Check, CircleDashed, CircleDot } from 'lucide-react';
+import { Check, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface OnboardingProgressProps {
@@ -15,134 +15,124 @@ interface OnboardingProgressProps {
   onSelectStep: (step: OnboardingStep) => void;
 }
 
+interface StepInfo {
+  id: OnboardingStep;
+  name: string;
+  description: string;
+}
+
 export function OnboardingProgress({
   currentStep,
   stepsCompleted,
   onSelectStep
 }: OnboardingProgressProps) {
   // Define all steps and their display names
-  const steps = [
-    { id: OnboardingStep.BUSINESS_BASICS, name: 'Business Basics' },
-    { id: OnboardingStep.PROPERTY_CONFIG, name: 'Property Setup' },
-    { id: OnboardingStep.POLICIES, name: 'Policies' },
-    { id: OnboardingStep.COMPLETED, name: 'Complete' }
+  const steps: StepInfo[] = [
+    { 
+      id: OnboardingStep.BUSINESS_BASICS, 
+      name: 'Add Property Details', 
+      description: 'Provide us with a few details to personalize your experience.'
+    },
+    { 
+      id: OnboardingStep.PROPERTY_CONFIG, 
+      name: 'Add Property Details', 
+      description: 'Provide us with a few details to personalize your experience.'
+    },
+    { 
+      id: OnboardingStep.POLICIES, 
+      name: 'Upload Hotel Photos', 
+      description: 'Showcase your hotel with high-quality images.'
+    },
+    { 
+      id: OnboardingStep.COMPLETED, 
+      name: 'Add Room Details', 
+      description: 'Help us understand your room offerings to set up your hotel efficiently.'
+    }
   ];
 
   // Calculate active and completed steps
-  const getStepStatus = (stepId: OnboardingStep) => {
-    const stepIndex = steps.findIndex(s => s.id === stepId);
+  const getStepStatus = (step: StepInfo) => {
+    const stepIndex = steps.findIndex(s => s.id === step.id);
     const currentIndex = steps.findIndex(s => s.id === currentStep);
     
-    // Current step
-    if (stepId === currentStep) {
+    if (step.id === currentStep) {
       return 'current';
-    }
-    
-    // Completed step
-    if (stepIndex < currentIndex) {
+    } else if (stepIndex < currentIndex || stepsCompleted[step.id]) {
       return 'completed';
+    } else {
+      return 'future';
     }
-    
-    // Future step
-    return 'future';
-  };
-  
-  // Check if a step is clickable
-  const isStepClickable = (stepId: OnboardingStep) => {
-    const stepIndex = steps.findIndex(s => s.id === stepId);
-    const currentIndex = steps.findIndex(s => s.id === currentStep);
-    
-    // All steps before current are clickable
-    if (stepIndex < currentIndex) {
-      return true;
-    }
-    
-    // Current step is clickable
-    if (stepId === currentStep) {
-      return true;
-    }
-    
-    // Future steps are not clickable by default
-    return false;
   };
   
   return (
-    <div className="relative">
-      <div className="flex items-center justify-between w-full">
-        {steps.map((step, index) => {
-          const status = getStepStatus(step.id);
-          const clickable = isStepClickable(step.id);
-          const completed = stepsCompleted[step.id];
-          
-          return (
-            <div 
-              key={step.id} 
-              className="flex flex-col items-center relative"
-            >
-              {/* Line connecting steps */}
-              {index > 0 && (
+    <div className="flex flex-col space-y-2">
+      {steps.map((step, index) => {
+        const status = getStepStatus(step);
+        const isCompleted = status === 'completed';
+        const isCurrent = status === 'current';
+        const stepNumber = index + 1;
+        
+        // Determine if there should be a connecting line after this step
+        const showConnector = index < steps.length - 1;
+        
+        return (
+          <div key={step.id} className="relative">
+            <div className="flex items-start">
+              {/* Step indicator and number */}
+              <div className="relative flex-shrink-0 mr-4">
                 <div 
                   className={cn(
-                    "absolute h-[2px] top-4 -left-1/2 w-full -z-10 transition-colors",
+                    "w-8 h-8 rounded-full flex items-center justify-center z-10",
                     {
-                      "bg-primary": status === 'completed' || (status === 'current' && steps[index-1] && getStepStatus(steps[index-1].id) === 'completed'),
-                      "bg-muted": status === 'future' || (status === 'current' && steps[index-1] && getStepStatus(steps[index-1].id) !== 'completed')
+                      "bg-teal-600 text-white": isCompleted || isCurrent,
+                      "border-2 border-gray-200 text-gray-400": !isCompleted && !isCurrent
                     }
                   )}
-                />
-              )}
-              
-              {/* Step indicator */}
-              <button
-                onClick={() => clickable && onSelectStep(step.id)}
-                disabled={!clickable}
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center mb-2 transition-colors",
-                  {
-                    "bg-primary text-primary-foreground": status === 'current',
-                    "bg-primary/10 text-primary hover:bg-primary/20": status === 'completed' && clickable,
-                    "bg-muted text-muted-foreground": status === 'future' || !clickable
-                  }
-                )}
-              >
-                {status === 'completed' ? (
-                  <Check className="h-4 w-4" />
-                ) : status === 'current' ? (
-                  <CircleDot className="h-4 w-4" />
-                ) : (
-                  <CircleDashed className="h-4 w-4" />
-                )}
-              </button>
-              
-              {/* Step name */}
-              <span 
-                className={cn(
-                  "text-sm font-medium",
-                  {
-                    "text-primary": status === 'current',
-                    "text-foreground": status === 'completed',
-                    "text-muted-foreground": status === 'future'
-                  }
-                )}
-              >
-                {step.name}
-              </span>
-              
-              {/* Completion status for current step */}
-              {status === 'current' && (
-                <span 
-                  className={cn(
-                    "text-xs mt-1",
-                    completed ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
-                  )}
                 >
-                  {completed ? "Complete" : "In progress"}
-                </span>
-              )}
+                  {isCompleted ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    <span>{stepNumber}</span>
+                  )}
+                </div>
+                
+                {/* Vertical connector line */}
+                {showConnector && (
+                  <div 
+                    className={cn(
+                      "absolute top-8 left-4 -ml-px h-full w-0.5 -z-10",
+                      {
+                        "bg-teal-600": isCompleted,
+                        "bg-gray-200": !isCompleted
+                      }
+                    )}
+                  />
+                )}
+              </div>
+              
+              {/* Step content */}
+              <div 
+                className={cn(
+                  "flex flex-col cursor-pointer mt-1",
+                  {
+                    "text-gray-500": !isCurrent && !isCompleted,
+                    "text-gray-900": isCurrent || isCompleted
+                  }
+                )}
+                onClick={() => {
+                  // Only allow navigation to completed steps or the current step
+                  if (isCompleted || isCurrent) {
+                    onSelectStep(step.id);
+                  }
+                }}
+              >
+                <div className="text-sm font-medium">{step.name}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{step.description}</div>
+              </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

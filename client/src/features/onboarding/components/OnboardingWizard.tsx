@@ -15,7 +15,7 @@ import { PropertyConfigForm } from './PropertyConfigForm';
 import { PoliciesForm } from './PoliciesForm';
 import { CompletedStep } from './CompletedStep';
 import { Loader2 } from 'lucide-react';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 
 export function OnboardingWizard() {
   const { 
@@ -29,14 +29,14 @@ export function OnboardingWizard() {
     completeOnboarding
   } = useOnboarding();
   
-  const navigate = useNavigate();
+  const [_, setLocation] = useLocation();
   
   // Redirect to dashboard if onboarding is already completed
   useEffect(() => {
     if (formState.completed) {
-      navigate('/dashboard');
+      setLocation('/dashboard');
     }
-  }, [formState.completed, navigate]);
+  }, [formState.completed, setLocation]);
   
   // Determine if current step is completed
   const stepsCompleted = {
@@ -77,7 +77,7 @@ export function OnboardingWizard() {
       case OnboardingStep.COMPLETED:
         success = await completeOnboarding();
         if (success) {
-          navigate('/dashboard');
+          setLocation('/dashboard');
         }
         break;
     }
@@ -172,62 +172,86 @@ export function OnboardingWizard() {
   }
   
   return (
-    <div className="container max-w-5xl py-8">
-      <div className="mb-12">
-        <OnboardingProgress 
-          currentStep={formState.currentStep} 
-          stepsCompleted={stepsCompleted}
-          onSelectStep={(step) => {
-            // Only allow navigation to completed steps or the current step
-            const stepIndex = Object.values(OnboardingStep).indexOf(step);
-            const currentStepIndex = Object.values(OnboardingStep).indexOf(formState.currentStep);
-            
-            if (stepIndex <= currentStepIndex) {
-              goToStep(step);
-            }
-          }}
-        />
-      </div>
-      
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl">{stepInfo.title}</CardTitle>
-          <CardDescription>{stepInfo.description}</CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          {renderStepContent()}
-          
-          <div className="flex justify-between mt-8">
-            {showPrevious ? (
-              <Button 
-                variant="outline" 
-                onClick={handlePrevious}
-                disabled={loading}
-              >
-                Previous
-              </Button>
-            ) : (
-              <div></div>
-            )}
-            
-            <Button 
-              variant="default" 
-              onClick={handleNext}
-              disabled={!canContinue || loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isLastStep ? 'Completing...' : 'Saving...'}
-                </>
-              ) : (
-                isLastStep ? 'Complete Setup' : 'Continue'
-              )}
-            </Button>
+    <div className="container max-w-7xl py-8">
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Left sidebar with progress */}
+        <div className="md:w-1/4 shrink-0">
+          <div className="p-4 md:sticky md:top-20 bg-white dark:bg-gray-950 rounded-lg shadow-sm border">
+            <OnboardingProgress 
+              currentStep={formState.currentStep} 
+              stepsCompleted={stepsCompleted}
+              onSelectStep={(step) => {
+                // Only allow navigation to completed steps or the current step
+                const stepIndex = Object.values(OnboardingStep).indexOf(step);
+                const currentStepIndex = Object.values(OnboardingStep).indexOf(formState.currentStep);
+                
+                if (stepIndex <= currentStepIndex) {
+                  goToStep(step);
+                }
+              }}
+            />
           </div>
-        </CardContent>
-      </Card>
+          
+          {/* Quick Start Guide Section */}
+          <div className="mt-8">
+            <h3 className="text-base font-medium mb-2">Quick Start Guide to Managing Your Hotel</h3>
+            <div className="relative overflow-hidden rounded-lg aspect-video">
+              <div className="bg-gray-200 dark:bg-gray-800 h-full flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Main content area */}
+        <div className="flex-1">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl">{stepInfo.title}</CardTitle>
+              <CardDescription>{stepInfo.description}</CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              {renderStepContent()}
+              
+              <div className="flex justify-between mt-8">
+                {showPrevious ? (
+                  <Button 
+                    variant="outline" 
+                    onClick={handlePrevious}
+                    disabled={loading}
+                    className="min-w-[100px]"
+                  >
+                    Back
+                  </Button>
+                ) : (
+                  <div></div>
+                )}
+                
+                <Button 
+                  variant="default" 
+                  onClick={handleNext}
+                  disabled={!canContinue || loading}
+                  className="min-w-[100px] bg-teal-600 hover:bg-teal-700"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {isLastStep ? 'Completing...' : 'Saving...'}
+                    </>
+                  ) : (
+                    isLastStep ? 'Complete Setup' : 'Next'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
