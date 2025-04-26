@@ -1,6 +1,4 @@
 import React from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { FormField } from "./form-field";
 import { cn } from "@/lib/utils";
 
 interface CheckboxInputProps {
@@ -22,45 +20,51 @@ export function CheckboxInput({
   checked,
   onChange,
   required = false,
-  error,
+  error = null,
   className,
   hint,
   disabled = false,
   labelClassName,
 }: CheckboxInputProps) {
   return (
-    <div className={cn("flex items-start space-x-2", className)}>
-      <Checkbox
-        id={id}
-        checked={checked}
-        onCheckedChange={onChange}
-        disabled={disabled}
-        aria-invalid={!!error}
-        aria-describedby={error ? `error-${id}` : undefined}
-        className="mt-1"
-      />
-      <div className="space-y-1 leading-none">
+    <div className={cn("space-y-2", className)}>
+      <div className="flex items-center">
+        <input
+          id={id}
+          name={id}
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className={cn(
+            "h-4 w-4 rounded border-neutral-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-1",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            error ? "border-destructive focus:ring-destructive" : ""
+          )}
+          disabled={disabled}
+          required={required}
+          aria-describedby={hint ? `${id}-hint` : undefined}
+        />
         <label
           htmlFor={id}
           className={cn(
-            "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer",
+            "ml-3 block text-sm font-medium text-neutral-900 dark:text-neutral-100",
             labelClassName
           )}
         >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-destructive ml-1">*</span>}
         </label>
-        {hint && !error && <p className="text-sm text-neutral-500">{hint}</p>}
-        {error && (
-          <p
-            id={`error-${id}`}
-            className="text-sm text-red-500 animate-fadeIn"
-            aria-live="polite"
-          >
-            {error}
-          </p>
-        )}
       </div>
+      
+      {(hint || error) && (
+        <div className="mt-1 ml-7">
+          {error ? (
+            <p className="text-xs text-destructive animate-shake">{error}</p>
+          ) : hint ? (
+            <p className="text-xs text-neutral-500 dark:text-neutral-400" id={`${id}-hint`}>{hint}</p>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }
