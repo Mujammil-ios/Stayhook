@@ -1,0 +1,46 @@
+I need you to ensure the Live Monitoring feature is fully accessible via navigation and direct URL—execute all steps straight through without pausing for confirmation:
+
+1. VERIFY PAGE CREATION  
+   - Confirm you have a file under `src/pages/live-monitoring.tsx` (or `app/live-monitoring/page.tsx` if using the app router) that exports a default React component.  
+   - Make sure the filename and folder structure match the route `/live-monitoring` exactly.  
+
+2. ROUTE REGISTRATION  
+   - For the Pages Router: no extra config should be needed—Next.js will auto-route based on the file.  
+   - For the App Router: ensure there is a `segment` directory named `live-monitoring` with a `page.tsx` inside.  
+   - If you’re using custom route rewrites, update `next.config.js` accordingly so `/live-monitoring` points to your new page.  
+
+3. SIDEBAR NAVIGATION  
+   - In your Sidebar component, import `Link` from `next/link` and add:  
+     ```tsx
+     <Link href="/live-monitoring" className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+       <MonitorIcon className="h-5 w-5 mr-2" />
+       <span>Live Monitoring</span>
+     </Link>
+     ```  
+   - Ensure this link appears in both collapsed and expanded states, with proper padding, hover styles, and aria-label.  
+
+4. DASHBOARD BUTTON/CARD  
+   - In your Dashboard component, add a button or card with an onClick using `useRouter().push('/live-monitoring')`:  
+     ```tsx
+     import { useRouter } from 'next/router';
+     // …
+     const router = useRouter();
+     return (
+       <Card onClick={() => router.push('/live-monitoring')} className="cursor-pointer">
+         <CardContent>
+           <Title>Live Monitoring</Title>
+           <Text>View live room status</Text>
+         </CardContent>
+       </Card>
+     );
+     ```  
+   - Style it consistently with your existing dashboard cards.  
+
+5. TEST DIRECT URL ACCESS  
+   - Manually navigate to `https://your-domain.com/live-monitoring` (and `http://localhost:3000/live-monitoring` in dev) to confirm the page loads without a 404.  
+   - If you encounter errors, fix missing imports, exports, or route mismatches.  
+
+6. IMPLEMENTATION REQUIREMENTS  
+   - Use existing Tailwind, shadcn/ui, and lucide-react conventions.  
+   - Maintain responsive design and keyboard accessibility.  
+   - Deliver all updated files (page component, Sidebar, Dashboard) in one batch—no mid-process confirmations.  

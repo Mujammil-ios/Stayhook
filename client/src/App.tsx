@@ -18,7 +18,7 @@ import Help from "@/pages/help";
 import FormsDemo from "@/pages/forms-demo";
 import LiveMonitoring from "@/pages/live-monitoring";
 import Onboarding from "@/pages/onboarding";
-import { ThemeProvider } from "@/hooks/useThemeContext";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuthContext";
 import { OnboardingProvider } from "@/features/onboarding/hooks/useOnboarding";
 import { CreateReservation } from "@/features/reservation/components/CreateReservation";
@@ -151,7 +151,7 @@ function App() {
   };
 
   return (
-    <ThemeProvider defaultTheme={getSavedTheme()}>
+    <ThemeProvider attribute="class" defaultTheme={getSavedTheme()}>
       <div className={mounted ? "" : "invisible"}>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
