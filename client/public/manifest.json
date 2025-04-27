@@ -1,7 +1,7 @@
 {
-  "name": "HotelHub Management System",
+  "name": "HotelHub - Hotel Management System",
   "short_name": "HotelHub",
-  "description": "A comprehensive system for managing hotel operations",
+  "description": "A comprehensive hotel management system for modern hospitality businesses",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -19,5 +19,24 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your hotel dashboard",
+      "url": "/"
+    },
+    {
+      "name": "Reservations",
+      "short_name": "Reservations",
+      "description": "Manage hotel reservations",
+      "url": "/reservations"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "screenshots": [],
+  "lang": "en-US",
+  "orientation": "any",
+  "prefer_related_applications": false
 }
