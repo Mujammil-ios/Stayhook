@@ -1,0 +1,37 @@
+I need you to implement the following features in our Hotel Management System—execute every step straight through without pausing for confirmation:
+
+1. ROOM MANAGEMENT – LIVE MONITORING
+   - On the Room Management tab, replace or augment the current list with a live grid showing every room’s status: Vacant (green) or Occupied (red).
+   - For Occupied rooms: display guest name, check-in time, expected check-out time.
+   - Add “Invoice” and “Edit” quick-action buttons on each room card; on click, open the corresponding modal or page.
+   - Auto-refresh occupancy data every 60 seconds via the API.
+   - If a room’s check-out time is within the next 20 minutes, have its card blink or highlight to draw attention.
+
+2. RESERVATIONS OVERVIEW – VISUAL DASHBOARD
+   - Create a dashboard section with status cards for: New Bookings, In-House, Arrivals, Departures, Cancellations, On-Hold, No-Show, Magic Link.
+   - Use distinct color coding per status and display the current count.
+   - For the “Magic Link” card, include a quick-action button that generates and copies/sends the link via API.
+
+3. BOOKING MANAGEMENT – LIVE MONITORING & ALERTS
+   - Build a real-time booking view similar to Room Management but focused on booking statuses.
+   - Trigger a visual alert (e.g. toast or blinking list item) for rooms with check-outs in 20 minutes.
+   - On hover or click of an occupied booking, show a detail panel with customer info, check-in time, and contact details.
+
+4. PRE-BOOKING & CANCELLATION POLICY
+   - In the New Booking modal, ensure fields for customer ID proof, payment method, and card details are present and validated.
+   - Display the hotel’s cancellation policy text below the form before submission.
+
+5. BOOKING STATUS & CALENDAR VIEW
+   - On the Booking Status page, allow filtering bookings by date range and status (Confirmed, Canceled).
+   - Add a calendar component that visualizes bookings as events on their dates; clicking an event opens the booking details modal.
+
+6. QUICK ACTIONS – FULL FUNCTIONALITY
+   - Audit every quick-action button across Rooms, Reservations, Dashboard, Booking History, Staff, etc.
+   - Ensure each one has a working onClick handler, opens the correct modal or triggers the right API call, and shows success/error feedback.
+   - Add console logging (e.g. `console.log("ACTION: Edit Room", roomId)`) for each action for debugging.
+
+IMPLEMENTATION REQUIREMENTS
+   - Use the existing Next.js/React/Tailwind code structure and shared UI components.
+   - Maintain responsive design and accessibility (ARIA roles, keyboard navigation).
+   - Persist live data updates and theme settings as before.
+   - Deliver the complete code changes for all components, pages, and service hooks in one pass—no mid-process confirmations.
