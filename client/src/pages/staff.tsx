@@ -21,10 +21,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { StaffModal } from "@/components/forms/staff/StaffModal";
 
 const Staff = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [showStaffModal, setShowStaffModal] = useState(false);
 
   const filteredStaff = staffData.filter(staff => {
     // Filter by role
@@ -68,7 +70,7 @@ const Staff = () => {
       <div className="mb-6 sm:flex sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Staff Portal</h1>
         <div className="mt-3 sm:mt-0">
-          <Button>
+          <Button onClick={() => setShowStaffModal(true)}>
             <i className="ri-user-add-line mr-2"></i>
             Add New Staff
           </Button>
@@ -164,13 +166,24 @@ const Staff = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <button className="text-primary hover:text-primary-600 tooltip" data-tooltip="View">
+                          <button 
+                            className="text-primary hover:text-primary-600 tooltip" 
+                            data-tooltip="View"
+                            onClick={() => setShowStaffModal(true)}
+                          >
                             <i className="ri-eye-line"></i>
                           </button>
-                          <button className="text-primary hover:text-primary-600 tooltip" data-tooltip="Edit">
+                          <button 
+                            className="text-primary hover:text-primary-600 tooltip" 
+                            data-tooltip="Edit"
+                            onClick={() => setShowStaffModal(true)}
+                          >
                             <i className="ri-pencil-line"></i>
                           </button>
-                          <button className="text-primary hover:text-primary-600 tooltip" data-tooltip="Schedule">
+                          <button 
+                            className="text-primary hover:text-primary-600 tooltip" 
+                            data-tooltip="Schedule"
+                          >
                             <i className="ri-calendar-line"></i>
                           </button>
                         </div>
@@ -341,6 +354,12 @@ const Staff = () => {
           </div>
         </TabsContent>
       </Tabs>
+      
+      {/* Staff Modal */}
+      <StaffModal 
+        isOpen={showStaffModal}
+        onClose={() => setShowStaffModal(false)}
+      />
     </div>
   );
 };
