@@ -16,6 +16,7 @@ import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import Help from "@/pages/help";
 import FormsDemo from "@/pages/forms-demo";
+import LiveMonitoring from "@/pages/live-monitoring";
 import Onboarding from "@/pages/onboarding";
 import { ThemeProvider } from "@/hooks/useThemeContext";
 import { AuthProvider, useAuth } from "@/hooks/useAuthContext";
@@ -115,6 +116,7 @@ function Routes() {
           <Route path="/staff" component={Staff} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
+          <Route path="/live-monitoring" component={LiveMonitoring} />
           <Route path="/help" component={Help} />
           <Route path="/forms-demo" component={FormsDemo} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />

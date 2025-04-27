@@ -1,0 +1,30 @@
+I need you to refine and polish the live monitoring feature—execute all steps straight through without pausing for confirmation:
+
+1. SEPARATE LIVE MONITORING PAGE  
+   - Create a new route/page at `/live-monitoring`.  
+   - Move the live room status grid from the Room Management tab into this dedicated page.  
+   - Add a link or “Live Monitoring” button in the main navigation or dashboard that opens `/live-monitoring`.  
+
+2. ROOM CARD SIZE & LAYOUT  
+   - Reduce each room card’s dimensions: aim for roughly one-quarter of the viewport width on desktop, two-per-row on tablet, and one-per-row on mobile.  
+   - Use a flexible CSS grid (e.g. `grid-cols-4` → `grid-cols-2` → `grid-cols-1` at breakpoints) so cards reflow neatly.  
+   - Keep text and icons legible, but avoid excess padding or empty space.  
+
+3. COLOR PALETTE TUNING  
+   - Replace the bright red/green fills with subtler tones: use gentle green (`bg-green-200/300`) for Vacant and light slate (`bg-slate-200/300`) for Occupied, plus a muted accent for “blinking” soon-to-check-out rooms (e.g. amber `bg-amber-200`).  
+   - Ensure color contrasts meet accessibility (WCAG AA) and don’t overwhelm the UI.  
+
+4. ADVANCED QUICK ACTIONS  
+   - Replace basic `alert()` calls with:  
+     a. Icon buttons (e.g. invoice icon, edit icon) inside each card.  
+     b. On click, open a drawer or slide-over panel instead of a simple modal—show a mini detail view or form inline.  
+     c. Add smooth animations (Framer Motion fade-in/slide-up) when the panel appears.  
+     d. Show contextual tooltips on hover (“Edit Room”, “Generate Invoice”).  
+   - For “Upcoming Check-Out” alerts, instead of blinking the whole card, display a small pulsating badge or toast in the corner of that card.  
+
+5. IMPLEMENTATION REQUIREMENTS  
+   - Follow existing Tailwind and component conventions—use utility classes, shadcn/ui components, and lucide-react icons.  
+   - Maintain responsive design and keyboard accessibility.  
+   - Keep the automatic refresh (60 s) for room data intact.  
+   - Ensure all live data is loaded via API service calls (e.g. use fetch/axios hooks); architect the data layer so future API endpoints can be swapped in without UI changes or additional refactoring.  
+   - Deliver all code changes for the new page, CSS adjustments, color variables, quick-action components, and animations in one pass—no mid-process confirmations.  

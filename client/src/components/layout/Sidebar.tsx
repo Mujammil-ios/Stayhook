@@ -99,6 +99,14 @@ const Sidebar = ({ mobileMenuOpen, toggleMobileMenu }: SidebarProps) => {
             <i className={`ri-door-line mr-3 ${isActive("/rooms") ? "text-primary" : "text-neutral-500"} group-hover:text-primary transition-colors duration-150`}></i>
             <span className="truncate">Room Management</span>
           </Link>
+          <Link href="/live-monitoring" 
+            className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive("/live-monitoring") ? activeLinkClass : ""} ${hoverClass} group transition-colors duration-150 cursor-pointer`}
+            tabIndex={0}
+            aria-current={isActive("/live-monitoring") ? "page" : undefined}
+          >
+            <i className={`ri-radar-line mr-3 ${isActive("/live-monitoring") ? "text-primary" : "text-neutral-500"} group-hover:text-primary transition-colors duration-150`}></i>
+            <span className="truncate">Live Monitoring</span>
+          </Link>
           <Link href="/bookings" 
             className={`nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive("/bookings") ? activeLinkClass : ""} ${hoverClass} group transition-colors duration-150 cursor-pointer`}
             tabIndex={0}

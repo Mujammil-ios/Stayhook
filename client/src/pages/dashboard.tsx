@@ -58,6 +58,12 @@ const Dashboard = () => {
             <i className="ri-add-line mr-2"></i>
             Create Property
           </Button>
+          <Button className="mr-2" variant="default" asChild>
+            <Link href="/live-monitoring">
+              <i className="ri-radar-line mr-2"></i>
+              Live Monitoring
+            </Link>
+          </Button>
           <Button>
             <i className="ri-download-line mr-2"></i>
             Export
