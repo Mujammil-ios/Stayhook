@@ -1,0 +1,46 @@
+I need you to implement two sets of changes to our Hotel Management System—first, make it a fully installable PWA on desktop platforms (Windows, Ubuntu Linux, Mac) with optional mobile support; second, fix any modal forms that aren’t opening. Please complete all steps in one go without stopping for confirmations:
+
+1. PROGRESSIVE WEB APP (PWA) SETUP  
+   A. Web App Manifest  
+      - Create a `manifest.json` at the project root with `name`, `short_name`, `start_url`, `display: standalone`, `background_color`, `theme_color`, and an array of icons (192×192, 512×512 PNGs).  
+      - Link it in `<head>` of `index.html` (or `_document.tsx` for Next.js).  
+
+   B. Service Worker  
+      - Register a service worker in your main entry file (e.g. `index.tsx`) that caches app shell assets and API responses.  
+      - Use Workbox or `vite-plugin-pwa` (if using Vite) to generate precache and runtime caching rules.  
+      - Provide an offline fallback HTML page for navigation requests.  
+
+   C. Icons & Installation  
+      - Add platform-specific icons (Windows “.ico” via `<link rel="shortcut icon">`, Linux/mac icon files if needed, and PNGs for desktop install prompts).  
+      - Ensure Chrome/Edge on desktop shows “Install app” prompts; verify Safari on Mac supports Install.  
+      - Optionally configure Android (WebAPK) and iOS (add to home screen meta tags and icons).  
+
+   D. Meta Tags & Headers  
+      - Add `<meta name="theme-color">`, `<meta name="mobile-web-app-capable">`, and `<meta name="apple-mobile-web-app-capable">` tags.  
+      - Verify HTTPS hosting or local `localhost` secure context for service worker to run.  
+
+   E. Testing & Validation  
+      - Test “Install app” on Chrome/Edge on Windows, Ubuntu, Mac.  
+      - Verify offline access: load homepage and a policy page while offline.  
+      - Confirm service worker registrations and cache responses in DevTools.  
+
+2. FIX NON-OPENING MODAL FORMS  
+   A. Staff Portal – Add Staff Form  
+      - In the Staff Management section, ensure the “Add Staff” button’s onClick opens the StaffModal.  
+      - Verify `isOpen` state, modal component import, and event handler wiring.  
+
+   B. Booking History – New Booking Form  
+      - In the Booking History tab, fix the “New Booking” button so it opens the BookingModal.  
+      - Check that the booking form component is correctly imported and rendered.  
+
+   C. OTHER FORMS  
+      - Audit all modal triggers across Rooms, Guests, Reservations, Settings, Policies.  
+      - Ensure each “Add” or “New” button has a working click handler and the corresponding modal component is loaded.  
+      - Console.log the modal state changes for debugging and remove any stale conditional rendering that prevents opening.  
+
+3. IMPLEMENTATION REQUIREMENTS  
+   - Use existing project structure, Tailwind and component patterns.  
+   - Persist PWA manifest and service worker files in build output.  
+   - Maintain form validation, logging, and success/error toasts as before.  
+   - Ensure responsive design and dark/light mode still work post-PWA integration.  
+   - Deliver full code for manifest.json, service worker registration, caching config, modal fixes, and any updated component files—all at once.  

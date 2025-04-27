@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HotelHub - Offline</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      color: #333;
+      background-color: #f9fafb;
+    }
+    
+    .container {
+      max-width: 500px;
+      padding: 40px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      margin-top: 0;
+      font-weight: 600;
+      color: #3b82f6;
+    }
+    
+    p {
+      margin: 16px 0;
+      line-height: 1.5;
+    }
+    
+    button {
+      margin-top: 20px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #2563eb;
+    }
+    
+    .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      color: #3b82f6;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #1f2937;
+        color: #e5e7eb;
+      }
+      
+      .container {
+        background-color: #111827;
+      }
+      
+      h1 {
+        color: #60a5fa;
+      }
+      
+      button {
+        background-color: #3b82f6;
+      }
+      
+      button:hover {
+        background-color: #60a5fa;
+      }
+      
+      .icon {
+        color: #60a5fa;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📶</div>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection. The HotelHub Management System requires an internet connection to access most features.</p>
+    <p>Some functionality may be available while offline, but for the best experience, please reconnect to the internet.</p>
+    <button onclick="window.location.reload()">Try Again</button>
+  </div>
+</body>
+</html>

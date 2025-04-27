@@ -92,13 +92,13 @@ function Routes() {
   // Note: Key prop forces Layout to re-render when location changes
 
   // Handle the onboarding page separately - it should not use the regular Layout
-  if (location === "/onboarding") {
-    return (
-      <Suspense fallback={<LoadingIndicator />}>
-        <Onboarding />
-      </Suspense>
-    );
-  }
+  // if (location === "/onboarding") {
+  //   return (
+  //     <Suspense fallback={<LoadingIndicator />}>
+  //       <Onboarding />
+  //     </Suspense>
+  //   );
+  // }
 
   return (
     <Layout key={location}>
@@ -107,6 +107,7 @@ function Routes() {
           <Route path="/" component={Dashboard} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/property" component={Property} />
+          <Route path="/onboarding" component={Property} />
           <Route path="/rooms" component={Rooms} />
           <Route path="/bookings" component={Bookings} />
           <Route path="/reservations" component={Reservations} />
