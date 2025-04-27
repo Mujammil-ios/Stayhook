@@ -1,280 +1,403 @@
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "@/components/ui/calendar";
+import { Progress } from "@/components/ui/progress";
 
-// Status types for the dashboard
+// Define booking status types for better type safety
 type BookingStatus = 
-  "new" | 
-  "in-house" | 
-  "arrivals" | 
-  "departures" | 
-  "cancellations" | 
-  "on-hold" | 
-  "no-show" | 
-  "magic-link";
+  | "confirmed" 
+  | "checked-in" 
+  | "checked-out" 
+  | "cancelled" 
+  | "no-show" 
+  | "on-hold";
 
-// Sample data (would be fetched from API in production)
+// Sample data for booking stats
 const bookingStats = {
-  "new": 12,
-  "in-house": 45,
-  "arrivals": 8,
-  "departures": 6,
-  "cancellations": 3,
-  "on-hold": 7,
-  "no-show": 2,
-  "magic-link": 14
+  total: 142,
+  categories: {
+    "confirmed": 48,
+    "checked-in": 36,
+    "checked-out": 28,
+    "cancelled": 12,
+    "no-show": 6,
+    "on-hold": 12
+  },
+  revenue: {
+    today: 25600,
+    thisMonth: 386000,
+    lastMonth: 325800
+  },
+  occupancy: {
+    today: 76,
+    thisMonth: 82,
+    lastMonth: 68
+  }
 };
 
-const StatusCard: React.FC<{ 
-  status: BookingStatus; 
-  count: number;
-  icon: string;
-  onAction?: () => void;
-  hasAction?: boolean;
-  actionIcon?: string;
-  actionLabel?: string;
-}> = ({
-  status,
-  count,
-  icon,
-  onAction,
-  hasAction = false,
-  actionIcon = "ri-more-line",
-  actionLabel = "Action"
-}) => {
-  // Get the appropriate styling for each card type
-  const getCardStyles = () => {
-    switch (status) {
-      case "new":
-        return {
-          bgColor: "bg-blue-50 dark:bg-blue-950",
-          iconColor: "text-blue-500 dark:text-blue-400",
-          textColor: "text-blue-700 dark:text-blue-300",
-          borderColor: "border-blue-200 dark:border-blue-800"
-        };
-      case "in-house":
-        return {
-          bgColor: "bg-green-50 dark:bg-green-950",
-          iconColor: "text-green-500 dark:text-green-400",
-          textColor: "text-green-700 dark:text-green-300",
-          borderColor: "border-green-200 dark:border-green-800"
-        };
-      case "arrivals":
-        return {
-          bgColor: "bg-purple-50 dark:bg-purple-950",
-          iconColor: "text-purple-500 dark:text-purple-400",
-          textColor: "text-purple-700 dark:text-purple-300",
-          borderColor: "border-purple-200 dark:border-purple-800"
-        };
-      case "departures":
-        return {
-          bgColor: "bg-amber-50 dark:bg-amber-950",
-          iconColor: "text-amber-500 dark:text-amber-400",
-          textColor: "text-amber-700 dark:text-amber-300",
-          borderColor: "border-amber-200 dark:border-amber-800"
-        };
-      case "cancellations":
-        return {
-          bgColor: "bg-red-50 dark:bg-red-950",
-          iconColor: "text-red-500 dark:text-red-400",
-          textColor: "text-red-700 dark:text-red-300",
-          borderColor: "border-red-200 dark:border-red-800"
-        };
-      case "on-hold":
-        return {
-          bgColor: "bg-orange-50 dark:bg-orange-950",
-          iconColor: "text-orange-500 dark:text-orange-400",
-          textColor: "text-orange-700 dark:text-orange-300",
-          borderColor: "border-orange-200 dark:border-orange-800"
-        };
-      case "no-show":
-        return {
-          bgColor: "bg-gray-50 dark:bg-gray-900",
-          iconColor: "text-gray-500 dark:text-gray-400",
-          textColor: "text-gray-700 dark:text-gray-300",
-          borderColor: "border-gray-200 dark:border-gray-800"
-        };
-      case "magic-link":
-        return {
-          bgColor: "bg-indigo-50 dark:bg-indigo-950",
-          iconColor: "text-indigo-500 dark:text-indigo-400",
-          textColor: "text-indigo-700 dark:text-indigo-300",
-          borderColor: "border-indigo-200 dark:border-indigo-800"
-        };
-      default:
-        return {
-          bgColor: "bg-neutral-50 dark:bg-neutral-900",
-          iconColor: "text-neutral-500 dark:text-neutral-400",
-          textColor: "text-neutral-700 dark:text-neutral-300",
-          borderColor: "border-neutral-200 dark:border-neutral-800"
-        };
-    }
-  };
+// Sample data for calendar view
+const calendarBookings = [
+  { date: new Date(2024, 3, 27), count: 8, type: "check-in" },
+  { date: new Date(2024, 3, 27), count: 5, type: "check-out" },
+  { date: new Date(2024, 3, 28), count: 6, type: "check-in" },
+  { date: new Date(2024, 3, 28), count: 4, type: "check-out" },
+  { date: new Date(2024, 3, 29), count: 10, type: "check-in" },
+  { date: new Date(2024, 3, 29), count: 3, type: "check-out" },
+  { date: new Date(2024, 3, 30), count: 7, type: "check-in" },
+  { date: new Date(2024, 3, 30), count: 9, type: "check-out" },
+  { date: new Date(2024, 4, 1), count: 12, type: "check-in" },
+  { date: new Date(2024, 4, 1), count: 6, type: "check-out" },
+  { date: new Date(2024, 4, 2), count: 5, type: "check-in" },
+  { date: new Date(2024, 4, 2), count: 8, type: "check-out" },
+];
 
-  const styles = getCardStyles();
-  
-  // Get formatted status label
-  const getStatusLabel = () => {
-    switch (status) {
-      case "new": return "New Bookings";
-      case "in-house": return "In-House";
-      case "arrivals": return "Arrivals";
-      case "departures": return "Departures";
-      case "cancellations": return "Cancellations";
-      case "on-hold": return "On Hold";
-      case "no-show": return "No-Show";
-      case "magic-link": return "Magic Link";
-      default: return status;
-    }
-  };
-
-  return (
-    <Card className={`border ${styles.borderColor} ${styles.bgColor} shadow-sm relative overflow-hidden`}>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className={`text-sm font-medium ${styles.textColor}`}>{getStatusLabel()}</span>
-            <span className="text-3xl font-bold mt-1">{count}</span>
-          </div>
-          <div className={`h-12 w-12 rounded-full flex items-center justify-center ${styles.bgColor} ${styles.iconColor}`}>
-            <i className={`${icon} text-2xl`}></i>
-          </div>
-        </div>
-        
-        {hasAction && (
-          <Button 
-            className="mt-4 w-full"
-            size="sm"
-            variant="secondary"
-            onClick={onAction}
-          >
-            <i className={`${actionIcon} mr-1`}></i> {actionLabel}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+// Sample upcoming bookings data
+const upcomingBookings = [
+  { 
+    id: "B1007",
+    guestName: "Rajesh Kumar",
+    roomType: "Deluxe Room",
+    checkInDate: "2024-04-28",
+    nights: 3,
+    status: "confirmed",
+    amount: 15000
+  },
+  { 
+    id: "B1008",
+    guestName: "Ananya Patel",
+    roomType: "Suite Room",
+    checkInDate: "2024-04-28",
+    nights: 2,
+    status: "confirmed",
+    amount: 24000
+  },
+  { 
+    id: "B1009",
+    guestName: "Suresh Mehta",
+    roomType: "Standard Room",
+    checkInDate: "2024-04-29",
+    nights: 1,
+    status: "on-hold",
+    amount: 6500
+  },
+  { 
+    id: "B1010",
+    guestName: "Divya Singh",
+    roomType: "Deluxe Room",
+    checkInDate: "2024-04-30",
+    nights: 4,
+    status: "confirmed",
+    amount: 20000
+  },
+  { 
+    id: "B1011",
+    guestName: "Vikrant Desai",
+    roomType: "Suite Room",
+    checkInDate: "2024-05-01",
+    nights: 2,
+    status: "confirmed",
+    amount: 24000
+  }
+];
 
 export function ReservationsOverview() {
-  const { toast } = useToast();
-
-  // Handler for Magic Link generation
-  const handleGenerateMagicLink = () => {
-    console.log("ACTION: Generate Magic Link");
-    
-    // Simulate API call to generate link
-    setTimeout(() => {
-      // Mock link
-      const magicLink = "https://hotel.example.com/booking/magic/abc123xyz";
-      
-      // Simulate clipboard copy
-      navigator.clipboard.writeText(magicLink)
-        .then(() => {
-          toast({
-            title: "Magic Link Generated",
-            description: "Link has been copied to your clipboard",
-            variant: "default",
-          });
-        })
-        .catch((err) => {
-          console.error("Failed to copy magic link:", err);
-          toast({
-            title: "Magic Link Generated",
-            description: `Link: ${magicLink}`,
-            variant: "default",
-          });
-        });
-    }, 500);
+  const [selectedMonth, setSelectedMonth] = useState<Date | undefined>(new Date());
+  
+  // Function to get booking counts for a specific date
+  const getBookingsForDate = (date: Date) => {
+    return calendarBookings.filter(booking => 
+      booking.date.getDate() === date.getDate() && 
+      booking.date.getMonth() === date.getMonth() &&
+      booking.date.getFullYear() === date.getFullYear()
+    );
   };
-
+  
+  // Custom calendar render function to show booking counts
+  const renderCalendarCell = (day: Date) => {
+    const bookings = getBookingsForDate(day);
+    const checkIns = bookings.find(b => b.type === "check-in")?.count || 0;
+    const checkOuts = bookings.find(b => b.type === "check-out")?.count || 0;
+    
+    if (checkIns === 0 && checkOuts === 0) return null;
+    
+    return (
+      <div className="flex flex-col items-center justify-center text-[10px] mt-1">
+        {checkIns > 0 && (
+          <div className="flex items-center text-green-600">
+            <i className="ri-login-box-line mr-0.5"></i>
+            <span>{checkIns}</span>
+          </div>
+        )}
+        {checkOuts > 0 && (
+          <div className="flex items-center text-red-600">
+            <i className="ri-logout-box-line mr-0.5"></i>
+            <span>{checkOuts}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // Function to render status badge
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case "confirmed":
+        return <Badge className="bg-green-500">Confirmed</Badge>;
+      case "checked-in":
+        return <Badge className="bg-blue-500">Checked In</Badge>;
+      case "checked-out":
+        return <Badge className="bg-purple-500">Checked Out</Badge>;
+      case "cancelled":
+        return <Badge className="bg-red-500">Cancelled</Badge>;
+      case "no-show":
+        return <Badge className="bg-gray-500">No Show</Badge>;
+      case "on-hold":
+        return <Badge className="bg-amber-500">On Hold</Badge>;
+      default:
+        return <Badge>Unknown</Badge>;
+    }
+  };
+  
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Reservations Overview</h1>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => {
-            console.log("Refreshing reservation stats...");
-            toast({
-              title: "Data Refreshed",
-              description: "Reservation statistics have been updated",
-              variant: "default",
-            });
-          }}
-        >
-          <i className="ri-refresh-line mr-1"></i> Refresh
-        </Button>
+      {/* Key Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">Total Bookings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{bookingStats.total}</div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <div className="flex items-center">
+                <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
+                <div className="text-xs">
+                  Active <span className="font-medium">{bookingStats.categories["confirmed"] + bookingStats.categories["checked-in"]}</span>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <div className="h-2 w-2 rounded-full bg-amber-500 mr-2"></div>
+                <div className="text-xs">
+                  On Hold <span className="font-medium">{bookingStats.categories["on-hold"]}</span>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <div className="h-2 w-2 rounded-full bg-red-500 mr-2"></div>
+                <div className="text-xs">
+                  Cancelled <span className="font-medium">{bookingStats.categories["cancelled"]}</span>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <div className="h-2 w-2 rounded-full bg-gray-500 mr-2"></div>
+                <div className="text-xs">
+                  No Show <span className="font-medium">{bookingStats.categories["no-show"]}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">Current Occupancy</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{bookingStats.occupancy.today}%</div>
+            <Progress className="h-2 mt-2" value={bookingStats.occupancy.today} />
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">This Month</span>
+                <span className="text-sm font-medium">{bookingStats.occupancy.thisMonth}%</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">Last Month</span>
+                <span className="text-sm font-medium">{bookingStats.occupancy.lastMonth}%</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">Today's Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col items-center justify-center p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                <i className="ri-login-box-line text-xl text-green-600"></i>
+                <span className="mt-1 text-lg font-semibold">8</span>
+                <span className="text-xs text-muted-foreground">Check-ins</span>
+              </div>
+              <div className="flex flex-col items-center justify-center p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+                <i className="ri-logout-box-line text-xl text-red-600"></i>
+                <span className="mt-1 text-lg font-semibold">5</span>
+                <span className="text-xs text-muted-foreground">Check-outs</span>
+              </div>
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">New Bookings</span>
+                <span className="text-sm font-medium">3 today</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">Cancellations</span>
+                <span className="text-sm font-medium">1 today</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{bookingStats.revenue.today.toLocaleString()}</div>
+            <div className="text-xs text-green-600 mt-1">+12% from yesterday</div>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">This Month</span>
+                <span className="text-sm font-medium">₹{bookingStats.revenue.thisMonth.toLocaleString()}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">Last Month</span>
+                <span className="text-sm font-medium">₹{bookingStats.revenue.lastMonth.toLocaleString()}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatusCard
-          status="new"
-          count={bookingStats.new}
-          icon="ri-file-text-line"
-        />
-        
-        <StatusCard
-          status="in-house"
-          count={bookingStats["in-house"]}
-          icon="ri-home-5-line"
-        />
-        
-        <StatusCard
-          status="arrivals"
-          count={bookingStats.arrivals}
-          icon="ri-flight-land-line"
-        />
-        
-        <StatusCard
-          status="departures"
-          count={bookingStats.departures}
-          icon="ri-flight-takeoff-line"
-        />
-        
-        <StatusCard
-          status="cancellations"
-          count={bookingStats.cancellations}
-          icon="ri-close-circle-line"
-        />
-        
-        <StatusCard
-          status="on-hold"
-          count={bookingStats["on-hold"]}
-          icon="ri-time-line"
-        />
-        
-        <StatusCard
-          status="no-show"
-          count={bookingStats["no-show"]}
-          icon="ri-user-unfollow-line"
-        />
-        
-        <StatusCard
-          status="magic-link"
-          count={bookingStats["magic-link"]}
-          icon="ri-link-m"
-          hasAction={true}
-          actionIcon="ri-link-m"
-          actionLabel="Generate & Copy Link"
-          onAction={handleGenerateMagicLink}
-        />
+      {/* Booking Distribution */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Booking Calendar</CardTitle>
+            <CardDescription>Check-ins and check-outs for the month</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center">
+              <div className="flex items-center justify-center mb-4 space-x-4">
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+                  <span className="text-sm">Check-in</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+                  <span className="text-sm">Check-out</span>
+                </div>
+              </div>
+              <Calendar
+                mode="single"
+                selected={selectedMonth}
+                onSelect={setSelectedMonth}
+                month={selectedMonth}
+                className="rounded-md border"
+                components={{
+                  DayContent: ({ date }) => (
+                    <div className="flex flex-col items-center">
+                      <div>{date.getDate()}</div>
+                      {renderCalendarCell(date)}
+                    </div>
+                  ),
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Check-ins</CardTitle>
+            <CardDescription>Next 5 days</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {upcomingBookings.map((booking) => (
+                <div 
+                  key={booking.id} 
+                  className="flex flex-col p-3 border rounded-md hover:bg-muted/40 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{booking.guestName}</span>
+                    {renderStatusBadge(booking.status)}
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-1 text-sm">
+                    <div>
+                      <span className="text-xs text-muted-foreground">Room</span>
+                      <p>{booking.roomType}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-muted-foreground">Check-in</span>
+                      <p>{booking.checkInDate}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-muted-foreground">Nights</span>
+                      <p>{booking.nights}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-muted-foreground">Amount</span>
+                      <p>₹{booking.amount.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
-      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-800">
-        <div className="flex items-start space-x-3">
-          <i className="ri-information-line text-blue-500 mt-1"></i>
-          <div>
-            <h3 className="text-sm font-medium mb-1">About Magic Links</h3>
-            <p className="text-sm text-muted-foreground">
-              Magic links are unique URLs that allow guests to directly access their booking information without requiring login credentials. 
-              Generate and share these links via email or SMS for a seamless guest experience.
-            </p>
+      {/* Booking Status Distribution */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Booking Status Distribution</CardTitle>
+          <CardDescription>Current status of all bookings</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(Object.keys(bookingStats.categories) as BookingStatus[]).map((status) => (
+              <div 
+                key={status} 
+                className="flex flex-col p-4 border rounded-md"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-full 
+                    ${status === "confirmed" ? "bg-green-100 text-green-600" : ""}
+                    ${status === "checked-in" ? "bg-blue-100 text-blue-600" : ""}
+                    ${status === "checked-out" ? "bg-purple-100 text-purple-600" : ""}
+                    ${status === "cancelled" ? "bg-red-100 text-red-600" : ""}
+                    ${status === "no-show" ? "bg-gray-100 text-gray-600" : ""}
+                    ${status === "on-hold" ? "bg-amber-100 text-amber-600" : ""}
+                  `}>
+                    <i className={`
+                      ${status === "confirmed" ? "ri-check-line" : ""}
+                      ${status === "checked-in" ? "ri-login-box-line" : ""}
+                      ${status === "checked-out" ? "ri-logout-box-line" : ""}
+                      ${status === "cancelled" ? "ri-close-line" : ""}
+                      ${status === "no-show" ? "ri-question-mark" : ""}
+                      ${status === "on-hold" ? "ri-time-line" : ""}
+                    `}></i>
+                  </div>
+                  <div>
+                    <div className="font-medium capitalize">{status.replace("-", " ")}</div>
+                    <div className="text-2xl font-bold">{bookingStats.categories[status]}</div>
+                  </div>
+                </div>
+                <Progress 
+                  className="h-2 mt-3" 
+                  value={(bookingStats.categories[status] / bookingStats.total) * 100} 
+                />
+                <div className="text-xs text-muted-foreground mt-2">
+                  {Math.round((bookingStats.categories[status] / bookingStats.total) * 100)}% of total
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

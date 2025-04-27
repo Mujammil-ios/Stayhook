@@ -1,6 +1,7 @@
 import { propertyData } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RoomMonitoring } from "@/features/rooms/components/RoomMonitoring";
 
 const Property = () => {
   return (
@@ -15,13 +16,18 @@ const Property = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs defaultValue="rooms" className="w-full">
         <TabsList className="mb-6">
+          <TabsTrigger value="rooms">Room Monitoring</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="amenities">Amenities</TabsTrigger>
           <TabsTrigger value="contact">Contact Info</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="rooms">
+          <RoomMonitoring />
+        </TabsContent>
 
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
