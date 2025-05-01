@@ -113,7 +113,7 @@ export function NewBookingModal({ isOpen, onClose }: NewBookingModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[800px] max-h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Booking</DialogTitle>
           <DialogDescription>
