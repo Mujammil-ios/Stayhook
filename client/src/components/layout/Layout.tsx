@@ -15,11 +15,11 @@ const Layout = ({ children }: LayoutProps) => {
   const [location] = useLocation();
 
   // Close mobile menu when location changes
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      setMobileMenuOpen(false);
-    }
-  }, [location, mobileMenuOpen]);
+  // useEffect(() => {
+  //   if (mobileMenuOpen) {
+  //     setMobileMenuOpen(false);
+  //   }
+  // }, [location, mobileMenuOpen]);
 
   // Close mobile menu on window resize (if desktop width is reached)
   useEffect(() => {
