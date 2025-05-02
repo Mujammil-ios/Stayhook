@@ -72,7 +72,8 @@ export function Modal({
       <div
         ref={modalRef}
         className={cn(
-          "glass relative w-full rounded-xl shadow-lg animate-scaleIn",
+          // "glass relative w-full rounded-xl shadow-lg animate-scaleIn",
+          "glass relative w-full max-h-[calc(100vh-4rem)] overflow-y-auto rounded-xl shadow-lg animate-scaleIn",
           sizeClasses[size]
         )}
         role="dialog"
