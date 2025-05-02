@@ -56,11 +56,11 @@ export interface StaffFormData {
   photo: File[];
 }
 
-export function StaffForm({ 
-  onSubmit, 
-  onCancel, 
+export function StaffForm({
+  onSubmit,
+  onCancel,
   initialData,
-  isLoading = false 
+  isLoading = false
 }: StaffFormProps) {
   // Generate a staff ID for new staff members
   const generateStaffId = () => {
@@ -91,22 +91,22 @@ export function StaffForm({
   useEffect(() => {
     if (formData.designation && formData.permissions.length === 0) {
       let defaultPermissions: string[] = [];
-      
+
       switch (formData.designation) {
         case "manager":
           defaultPermissions = [
-            "view_bookings", "manage_bookings", 
-            "view_rooms", "manage_rooms", 
-            "view_guests", "manage_guests", 
-            "view_staff", "manage_staff", 
-            "view_finances", "manage_finances", 
+            "view_bookings", "manage_bookings",
+            "view_rooms", "manage_rooms",
+            "view_guests", "manage_guests",
+            "view_staff", "manage_staff",
+            "view_finances", "manage_finances",
             "access_reports", "system_settings"
           ];
           break;
         case "receptionist":
           defaultPermissions = [
-            "view_bookings", "manage_bookings", 
-            "view_rooms", 
+            "view_bookings", "manage_bookings",
+            "view_rooms",
             "view_guests", "manage_guests"
           ];
           break;
@@ -118,7 +118,7 @@ export function StaffForm({
         default:
           defaultPermissions = ["view_bookings"];
       }
-      
+
       setFormData(prev => ({
         ...prev,
         permissions: defaultPermissions
@@ -155,7 +155,7 @@ export function StaffForm({
   // Validate on change
   useEffect(() => {
     const validationErrors = validateForm(formData, validationRules);
-    
+
     // Only show errors for fields that have been touched
     const filteredErrors: ValidationErrors = {};
     Object.keys(validationErrors).forEach(field => {
@@ -163,7 +163,7 @@ export function StaffForm({
         filteredErrors[field] = validationErrors[field];
       }
     });
-    
+
     setErrors(filteredErrors);
   }, [formData, touched]);
 
@@ -201,7 +201,7 @@ export function StaffForm({
   // Submit form
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Mark all fields as touched
     const allTouched: Record<string, boolean> = {};
     Object.keys(validationRules).forEach(field => {
@@ -220,152 +220,154 @@ export function StaffForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn">
-      <FieldGroup>
-        <TextInput
-          id="staffId"
-          label="Staff ID"
-          value={formData.staffId}
-          onChange={() => {}} // Read-only
-          placeholder="Auto-generated ID"
-          disabled
-          icon="ri-user-3-line"
-          hint="ID is automatically generated"
-        />
+    <div className="pt-4 pb-4 sm:pt-6 sm:pb-6 px-4 sm:px-6 max-h-screen overflow-y-auto">
+      <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn">
+        <FieldGroup>
+          <TextInput
+            id="staffId"
+            label="Staff ID"
+            value={formData.staffId}
+            onChange={() => { }} // Read-only
+            placeholder="Auto-generated ID"
+            disabled
+            icon="ri-user-3-line"
+            hint="ID is automatically generated"
+          />
 
-        <FileUpload
-          id="photo"
-          label="Staff Photo"
-          value={formData.photo}
-          onChange={handleFileUpload}
-          maxFiles={1}
-          accept="image/*"
-          hint="Upload a profile photo"
-        />
-      </FieldGroup>
+          <FileUpload
+            id="photo"
+            label="Staff Photo"
+            value={formData.photo}
+            onChange={handleFileUpload}
+            maxFiles={1}
+            accept="image/*"
+            hint="Upload a profile photo"
+          />
+        </FieldGroup>
 
-      <FieldGroup>
+        <FieldGroup>
+          <TextInput
+            id="name"
+            label="Full Name"
+            value={formData.name}
+            onChange={handleChange}
+            onBlur={() => handleBlur("name")}
+            placeholder="Enter staff member's full name"
+            required
+            error={getFieldError("name", errors)}
+            icon="ri-user-line"
+          />
+
+          <SelectInput
+            id="designation"
+            label="Designation"
+            value={formData.designation}
+            onChange={(value) => {
+              handleSelectChange("designation", value);
+              handleBlur("designation");
+            }}
+            options={designationOptions}
+            placeholder="Select designation"
+            required
+            error={getFieldError("designation", errors)}
+          />
+        </FieldGroup>
+
+        <FieldGroup>
+          <DatePicker
+            id="joiningDate"
+            label="Joining Date"
+            value={formData.joiningDate}
+            onChange={(date) => handleDateChange("joiningDate", date)}
+            required
+            error={getFieldError("joiningDate", errors)}
+          />
+
+          <TextInput
+            id="salary"
+            label="Monthly Salary"
+            value={formData.salary}
+            onChange={handleChange}
+            onBlur={() => handleBlur("salary")}
+            placeholder="Enter monthly salary"
+            required
+            error={getFieldError("salary", errors)}
+            icon="ri-money-dollar-circle-line"
+          />
+        </FieldGroup>
+
+        <FieldGroup>
+          <TextInput
+            id="phone"
+            label="Phone Number"
+            value={formData.phone}
+            onChange={handleChange}
+            onBlur={() => handleBlur("phone")}
+            placeholder="Enter phone number"
+            required
+            error={getFieldError("phone", errors)}
+            type="tel"
+            icon="ri-phone-line"
+          />
+
+          <TextInput
+            id="email"
+            label="Email Address"
+            value={formData.email}
+            onChange={handleChange}
+            onBlur={() => handleBlur("email")}
+            placeholder="Enter email address"
+            error={getFieldError("email", errors)}
+            type="email"
+            icon="ri-mail-line"
+          />
+        </FieldGroup>
+
         <TextInput
-          id="name"
-          label="Full Name"
-          value={formData.name}
+          id="address"
+          label="Address"
+          value={formData.address}
           onChange={handleChange}
-          onBlur={() => handleBlur("name")}
-          placeholder="Enter staff member's full name"
-          required
-          error={getFieldError("name", errors)}
-          icon="ri-user-line"
+          placeholder="Enter full address"
+          icon="ri-home-line"
         />
 
-        <SelectInput
-          id="designation"
-          label="Designation"
-          value={formData.designation}
-          onChange={(value) => {
-            handleSelectChange("designation", value);
-            handleBlur("designation");
-          }}
-          options={designationOptions}
-          placeholder="Select designation"
-          required
-          error={getFieldError("designation", errors)}
-        />
-      </FieldGroup>
+        <div className="rounded-md border border-neutral-200 dark:border-neutral-700 p-4 bg-neutral-50 dark:bg-neutral-800/50">
+          <h3 className="text-sm font-medium mb-3">System Permissions</h3>
+          <MultiCheckbox
+            id="permissions"
+            label="Access Permissions"
+            options={permissionOptions}
+            selectedValues={formData.permissions}
+            onChange={handleMultiCheckboxChange}
+            columns={2}
+            hint="Select the permissions for this staff member"
+          />
+        </div>
 
-      <FieldGroup>
-        <DatePicker
-          id="joiningDate"
-          label="Joining Date"
-          value={formData.joiningDate}
-          onChange={(date) => handleDateChange("joiningDate", date)}
-          required
-          error={getFieldError("joiningDate", errors)}
-        />
-
-        <TextInput
-          id="salary"
-          label="Monthly Salary"
-          value={formData.salary}
-          onChange={handleChange}
-          onBlur={() => handleBlur("salary")}
-          placeholder="Enter monthly salary"
-          required
-          error={getFieldError("salary", errors)}
-          icon="ri-money-dollar-circle-line"
-        />
-      </FieldGroup>
-
-      <FieldGroup>
-        <TextInput
-          id="phone"
-          label="Phone Number"
-          value={formData.phone}
-          onChange={handleChange}
-          onBlur={() => handleBlur("phone")}
-          placeholder="Enter phone number"
-          required
-          error={getFieldError("phone", errors)}
-          type="tel"
-          icon="ri-phone-line"
-        />
-
-        <TextInput
-          id="email"
-          label="Email Address"
-          value={formData.email}
-          onChange={handleChange}
-          onBlur={() => handleBlur("email")}
-          placeholder="Enter email address"
-          error={getFieldError("email", errors)}
-          type="email"
-          icon="ri-mail-line"
-        />
-      </FieldGroup>
-
-      <TextInput
-        id="address"
-        label="Address"
-        value={formData.address}
-        onChange={handleChange}
-        placeholder="Enter full address"
-        icon="ri-home-line"
-      />
-
-      <div className="rounded-md border border-neutral-200 dark:border-neutral-700 p-4 bg-neutral-50 dark:bg-neutral-800/50">
-        <h3 className="text-sm font-medium mb-3">System Permissions</h3>
-        <MultiCheckbox
-          id="permissions"
-          label="Access Permissions"
-          options={permissionOptions}
-          selectedValues={formData.permissions}
-          onChange={handleMultiCheckboxChange}
-          columns={2}
-          hint="Select the permissions for this staff member"
-        />
-      </div>
-
-      <div className="flex justify-end space-x-3">
-        {onCancel && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
-            Cancel
-          </Button>
-        )}
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <i className="ri-loader-4-line animate-spin mr-2"></i>
-              Saving...
-            </>
-          ) : (
-            "Add Staff Member"
+        <div className="flex justify-end space-x-3">
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
           )}
-        </Button>
-      </div>
-    </form>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <i className="ri-loader-4-line animate-spin mr-2"></i>
+                Saving...
+              </>
+            ) : (
+              "Add Staff Member"
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
