@@ -1,0 +1,32 @@
+# Supabase Edge Functions Configuration
+#
+# This file configures the Edge Functions deployed to Supabase
+#
+# To deploy: supabase functions deploy <function_name>
+# To schedule: supabase functions schedule <function_name> --cron "0 0 * * *"
+
+[[functions]]
+name = "sendBookingConfirmation"
+verify_jwt = true
+import_map = "./import_map.json"
+
+[functions.environment]
+SENDGRID_API_KEY = "{{env.SENDGRID_API_KEY}}"
+FROM_EMAIL = "{{env.FROM_EMAIL}}"
+SENDGRID_BOOKING_TEMPLATE_ID = "{{env.SENDGRID_BOOKING_TEMPLATE_ID}}"
+
+[[functions]]
+name = "housekeepingReminder"
+verify_jwt = false  # Allow anonymous invocation by scheduler
+import_map = "./import_map.json"
+schedule = "0 7 * * *"  # Run daily at 7 AM
+
+[functions.environment]
+SUPABASE_URL = "{{env.SUPABASE_URL}}"
+SUPABASE_SERVICE_ROLE_KEY = "{{env.SUPABASE_SERVICE_ROLE_KEY}}"
+SENDGRID_API_KEY = "{{env.SENDGRID_API_KEY}}"
+FROM_EMAIL = "{{env.FROM_EMAIL}}"
+SENDGRID_HOUSEKEEPING_TEMPLATE_ID = "{{env.SENDGRID_HOUSEKEEPING_TEMPLATE_ID}}"
+TWILIO_ACCOUNT_SID = "{{env.TWILIO_ACCOUNT_SID}}"
+TWILIO_AUTH_TOKEN = "{{env.TWILIO_AUTH_TOKEN}}"
+TWILIO_PHONE_NUMBER = "{{env.TWILIO_PHONE_NUMBER}}"

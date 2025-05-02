@@ -1,8 +1,13 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from 'cors';
+import { createPropertyOwner, getPropertyOwner, updatePropertyOwner, deletePropertyOwner, getAllPropertyOwners } from '../backend/api/propertyOwners';
 
 const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -34,6 +39,32 @@ app.use((req, res, next) => {
   });
 
   next();
+});
+
+// Property Owner Routes
+app.get('/property-owners', async (req, res) => {
+  const result = await getAllPropertyOwners();
+  res.json(result);
+});
+
+app.get('/property-owners/:id', async (req, res) => {
+  const result = await getPropertyOwner(req.params.id);
+  res.json(result);
+});
+
+app.post('/property-owners', async (req, res) => {
+  const result = await createPropertyOwner(req.body);
+  res.json(result);
+});
+
+app.put('/property-owners/:id', async (req, res) => {
+  const result = await updatePropertyOwner(req.params.id, req.body);
+  res.json(result);
+});
+
+app.delete('/property-owners/:id', async (req, res) => {
+  const result = await deletePropertyOwner(req.params.id);
+  res.json(result);
 });
 
 (async () => {
