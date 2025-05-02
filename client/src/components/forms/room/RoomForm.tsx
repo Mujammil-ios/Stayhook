@@ -106,7 +106,7 @@ export function RoomForm({
   // Validate on change
   useEffect(() => {
     const validationErrors = validateForm(formData, validationRules);
-    
+
     // Only show errors for fields that have been touched
     const filteredErrors: ValidationErrors = {};
     Object.keys(validationErrors).forEach(field => {
@@ -114,7 +114,7 @@ export function RoomForm({
         filteredErrors[field] = validationErrors[field];
       }
     });
-    
+
     setErrors(filteredErrors);
   }, [formData, touched]);
 
@@ -142,7 +142,7 @@ export function RoomForm({
   // Submit form
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Mark all fields as touched
     const allTouched: Record<string, boolean> = {};
     Object.keys(validationRules).forEach(field => {
@@ -162,120 +162,122 @@ export function RoomForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn">
-      <FieldGroup>
+    <div className="pt-4 pb-4 sm:pt-6 sm:pb-6 px-4 sm:px-6 max-h-screen overflow-y-auto">
+      <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn">
+        <FieldGroup>
+          <TextInput
+            id="roomNumber"
+            label="Room Number"
+            value={formData.roomNumber}
+            onChange={handleChange}
+            onBlur={() => handleBlur("roomNumber")}
+            placeholder="e.g., 101"
+            required
+            error={getFieldError("roomNumber", errors)}
+            icon="ri-hotel-line"
+          />
+
+          <SelectInput
+            id="category"
+            label="Room Category"
+            value={formData.category}
+            onChange={(value) => handleSelectChange("category", value)}
+            options={categoryOptions}
+            required
+          />
+        </FieldGroup>
+
+        <FieldGroup>
+          <SelectInput
+            id="floor"
+            label="Floor"
+            value={formData.floor}
+            onChange={(value) => handleSelectChange("floor", value)}
+            options={floorOptions}
+            required
+          />
+
+          <TextInput
+            id="capacity"
+            label="Capacity"
+            value={formData.capacity}
+            onChange={handleChange}
+            onBlur={() => handleBlur("capacity")}
+            placeholder="Max number of guests"
+            required
+            error={getFieldError("capacity", errors)}
+            type="number"
+            icon="ri-user-line"
+          />
+        </FieldGroup>
+
+        <FieldGroup>
+          <TextInput
+            id="baseRate"
+            label="Base Rate (per night)"
+            value={formData.baseRate}
+            onChange={handleChange}
+            onBlur={() => handleBlur("baseRate")}
+            placeholder="e.g., 2999"
+            required
+            error={getFieldError("baseRate", errors)}
+            type="text"
+            icon="ri-money-dollar-circle-line"
+          />
+
+          <SelectInput
+            id="status"
+            label="Room Status"
+            value={formData.status}
+            onChange={(value) => handleSelectChange("status", value)}
+            options={statusOptions}
+            required
+          />
+        </FieldGroup>
+
         <TextInput
-          id="roomNumber"
-          label="Room Number"
-          value={formData.roomNumber}
+          id="description"
+          label="Room Description"
+          value={formData.description}
           onChange={handleChange}
-          onBlur={() => handleBlur("roomNumber")}
-          placeholder="e.g., 101"
-          required
-          error={getFieldError("roomNumber", errors)}
-          icon="ri-hotel-line"
+          placeholder="Enter room description"
+          icon="ri-file-text-line"
         />
 
-        <SelectInput
-          id="category"
-          label="Room Category"
-          value={formData.category}
-          onChange={(value) => handleSelectChange("category", value)}
-          options={categoryOptions}
-          required
-        />
-      </FieldGroup>
+        <div className="space-y-2">
+          <MultiCheckbox
+            id="amenities"
+            label="Room Amenities"
+            options={amenitiesOptions}
+            selectedValues={formData.amenities}
+            onChange={handleMultiCheckboxChange}
+            columns={3}
+          />
+        </div>
 
-      <FieldGroup>
-        <SelectInput
-          id="floor"
-          label="Floor"
-          value={formData.floor}
-          onChange={(value) => handleSelectChange("floor", value)}
-          options={floorOptions}
-          required
-        />
-
-        <TextInput
-          id="capacity"
-          label="Capacity"
-          value={formData.capacity}
-          onChange={handleChange}
-          onBlur={() => handleBlur("capacity")}
-          placeholder="Max number of guests"
-          required
-          error={getFieldError("capacity", errors)}
-          type="number"
-          icon="ri-user-line"
-        />
-      </FieldGroup>
-
-      <FieldGroup>
-        <TextInput
-          id="baseRate"
-          label="Base Rate (per night)"
-          value={formData.baseRate}
-          onChange={handleChange}
-          onBlur={() => handleBlur("baseRate")}
-          placeholder="e.g., 2999"
-          required
-          error={getFieldError("baseRate", errors)}
-          type="text"
-          icon="ri-money-dollar-circle-line"
-        />
-
-        <SelectInput
-          id="status"
-          label="Room Status"
-          value={formData.status}
-          onChange={(value) => handleSelectChange("status", value)}
-          options={statusOptions}
-          required
-        />
-      </FieldGroup>
-
-      <TextInput
-        id="description"
-        label="Room Description"
-        value={formData.description}
-        onChange={handleChange}
-        placeholder="Enter room description"
-        icon="ri-file-text-line"
-      />
-
-      <div className="space-y-2">
-        <MultiCheckbox
-          id="amenities"
-          label="Room Amenities"
-          options={amenitiesOptions}
-          selectedValues={formData.amenities}
-          onChange={handleMultiCheckboxChange}
-          columns={3}
-        />
-      </div>
-
-      <div className="flex justify-end space-x-3">
-        {onCancel && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
-            Cancel
-          </Button>
-        )}
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <i className="ri-loader-4-line animate-spin mr-2"></i>
-              Saving...
-            </>
-          ) : (
-            "Save Room"
+        <div className="flex justify-end space-x-3">
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
           )}
-        </Button>
-      </div>
-    </form>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <i className="ri-loader-4-line animate-spin mr-2"></i>
+                Saving...
+              </>
+            ) : (
+              "Save Room"
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
