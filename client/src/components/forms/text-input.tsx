@@ -41,6 +41,12 @@ export function TextInput({
 }: TextInputProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault(); // Prevent any default behavior
+    onChange(e);
+  };
+
+
   return (
     <FormField
       label={label}
@@ -55,16 +61,16 @@ export function TextInput({
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <i className={`${icon} text-neutral-500`}></i>
           </div>
-        )}
-        <input
-          ref={inputRef}
-          id={id}
-          name={name || id}
-          type={type}
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          className={cn(
+       )}
+       <input
+         ref={inputRef}
+         id={id}
+         name={name || id}
+         type={type}
+         value={value}
+         onChange={handleChange} // Use the new handler
+         onBlur={onBlur}
+         className={cn(
             "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
             "placeholder:text-muted-foreground",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1",

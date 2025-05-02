@@ -95,8 +95,8 @@ export default function Signup() {
           variant: "default",
         });
         
-        // Redirect to dashboard
-        setLocation('/dashboard');
+        // Redirect to onboarding instead of dashboard
+        setLocation('/onboarding');
       } else {
         // Show error toast
         toast({

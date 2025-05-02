@@ -95,18 +95,29 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   // Form update handlers
   const updateBusinessBasics = (data: BusinessBasicsFormData) => {
-    setFormState(prev => ({
-      ...prev,
-      businessBasics: data
-    }));
-  };
+    // Debounce the update to prevent rapid re-renders
+    const timeoutId = setTimeout(() => {
+      setFormState(prev => ({
+        ...prev,
+        businessBasics: data
+      }));
+    }, 300); // Add a small delay
 
-  const updatePropertyConfig = (data: PropertyConfigFormData) => {
+    return () => clearTimeout(timeoutId);
+};
+
+ 
+const updatePropertyConfig = (data: PropertyConfigFormData) => {
+  // Debounce the update
+  const timeoutId = setTimeout(() => {
     setFormState(prev => ({
       ...prev,
       propertyConfig: data
     }));
-  };
+  }, 300);
+
+  return () => clearTimeout(timeoutId);
+};
 
   const updatePolicy = (policyIndex: number, data: PolicyFormData) => {
     setFormState(prev => {
@@ -282,28 +293,22 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     switch (step) {
       case OnboardingStep.BUSINESS_BASICS:
         const bb = formState.businessBasics;
+        // Make validation less strict by requiring only essential fields
         return !!(
           bb.propertyName && 
           bb.propertyType && 
-          bb.addressStreet && 
-          bb.addressCity && 
-          bb.addressState && 
-          bb.addressCountry && 
-          bb.addressPostalCode && 
           bb.contactPhone && 
           bb.contactEmail
         );
         
       case OnboardingStep.PROPERTY_CONFIG:
         const pc = formState.propertyConfig;
-        return !!(
-          pc.amenities.length > 0
-        );
+        // Allow proceeding with minimal configuration
+        return true;
         
       case OnboardingStep.POLICIES:
-        return formState.policies.every(policy => 
-          !!(policy.name && policy.description && policy.rules.length > 0)
-        );
+        // Allow proceeding with at least one policy
+        return formState.policies.length > 0;
         
       default:
         return true;

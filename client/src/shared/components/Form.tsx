@@ -96,6 +96,7 @@ export function FormProvider<T extends Record<string, any>>({
   
   // Handle input change event
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    e.preventDefault(); // Prevent default behavior
     const { name, value, type } = e.target;
     
     // Handle different input types

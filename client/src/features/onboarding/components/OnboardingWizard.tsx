@@ -3,10 +3,11 @@
  * 
  * Main component for the onboarding flow
  */
-
 import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 import { OnboardingProgress } from './OnboardingProgress';
 import { OnboardingStep } from '../types/index';
 import { useOnboarding } from '../hooks/useOnboarding';
@@ -18,6 +19,34 @@ import { Loader2 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 export function OnboardingWizard() {
+  const methods = useForm({
+    defaultValues: {
+      businessName: '',
+      businessType: 'hotel',
+      businessEmail: '',
+      businessPhone: '',
+      businessAddress: '',
+      businessCity: '',
+      businessState: '',
+      businessZip: '',
+      businessCountry: 'US',
+      businessDescription: '',
+      businessWebsite: '',
+      businessLogo: null,
+      propertyName: '',
+      propertyDescription: '',
+      propertyAddress: '',
+      propertyCity: '',
+      propertyState: '',
+      propertyZip: '',
+      propertyCountry: 'US',
+      propertyPhoto: null,
+      propertyAmenities: [],
+      propertyRoomTypes: [],
+      propertyPolicies: [],
+      propertyRules: [],
+    }
+  });
   const { 
     formState,
     loading,
@@ -170,38 +199,39 @@ export function OnboardingWizard() {
       </div>
     );
   }
-  
   return (
     <div className="container max-w-7xl py-8">
-      <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Left sidebar with progress */}
-        <div className="md:w-1/4 shrink-0">
-          <div className="p-4 md:sticky md:top-20 bg-white dark:bg-gray-950 rounded-lg shadow-sm border">
-            <OnboardingProgress 
-              currentStep={formState.currentStep} 
-              stepsCompleted={stepsCompleted}
-              onSelectStep={(step) => {
-                // Only allow navigation to completed steps or the current step
-                const stepIndex = Object.values(OnboardingStep).indexOf(step);
-                const currentStepIndex = Object.values(OnboardingStep).indexOf(formState.currentStep);
-                
-                if (stepIndex <= currentStepIndex) {
-                  goToStep(step);
-                }
-              }}
-            />
-          </div>
-          
-          {/* Quick Start Guide Section */}
-          <div className="mt-8">
-            <h3 className="text-base font-medium mb-2">Quick Start Guide to Managing Your Hotel</h3>
-            <div className="relative overflow-hidden rounded-lg aspect-video">
-              <div className="bg-gray-200 dark:bg-gray-800 h-full flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
-                </div>
+        <div className="lg:w-1/3 xl:w-1/4 shrink-0">
+          <div className="sticky top-8 space-y-8">
+            <div className="p-6 bg-white dark:bg-gray-950 rounded-lg shadow-sm border">
+              <OnboardingProgress 
+                currentStep={formState.currentStep} 
+                stepsCompleted={stepsCompleted}
+                onSelectStep={(step) => {
+                  const stepIndex = Object.values(OnboardingStep).indexOf(step);
+                  const currentStepIndex = Object.values(OnboardingStep).indexOf(formState.currentStep);
+                  
+                  if (stepIndex <= currentStepIndex) {
+                    goToStep(step);
+                  }
+                }}
+              />
+            </div>
+            
+            {/* Quick Start Guide Section */}
+            <div className="bg-white dark:bg-gray-950 rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-medium mb-4">Quick Start Guide</h3>
+              <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/your-video-id"
+                  title="How to setup your account on StayHook?"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
               </div>
             </div>
           </div>
@@ -210,48 +240,55 @@ export function OnboardingWizard() {
         {/* Main content area */}
         <div className="flex-1">
           <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl">{stepInfo.title}</CardTitle>
-              <CardDescription>{stepInfo.description}</CardDescription>
+            <CardHeader className="space-y-2 pb-8 border-b">
+              <CardTitle className="text-2xl font-bold">{stepInfo.title}</CardTitle>
+              <CardDescription className="text-base">{stepInfo.description}</CardDescription>
             </CardHeader>
             
-            <CardContent>
-              {renderStepContent()}
-              
-              <div className="flex justify-between mt-8">
-                {showPrevious ? (
-                  <Button 
-                    variant="outline" 
-                    onClick={handlePrevious}
-                    disabled={loading}
-                    className="min-w-[100px]"
-                  >
-                    Back
-                  </Button>
-                ) : (
-                  <div></div>
-                )}
+            <CardContent className="pt-8">
+              <Form {...methods}>
+                {renderStepContent()}
                 
-                <Button 
-                  variant="default" 
-                  onClick={handleNext}
-                  disabled={!canContinue || loading}
-                  className="min-w-[100px] bg-teal-600 hover:bg-teal-700"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isLastStep ? 'Completing...' : 'Saving...'}
-                    </>
+                <div className="flex justify-between mt-8 pt-6 border-t">
+                  {showPrevious ? (
+                    <Button 
+                      variant="outline" 
+                      onClick={handlePrevious}
+                      disabled={loading}
+                      className="min-w-[120px]"
+                    >
+                      <i className="ri-arrow-left-line mr-2"></i>
+                      Back
+                    </Button>
                   ) : (
-                    isLastStep ? 'Complete Setup' : 'Next'
+                    <div></div>
                   )}
-                </Button>
-              </div>
+                  
+                  <Button 
+                    variant="default" 
+                    onClick={handleNext}
+                    disabled={!canContinue || loading}
+                    className="min-w-[120px] bg-teal-600 hover:bg-teal-700"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {isLastStep ? 'Completing...' : 'Saving...'}
+                      </>
+                    ) : (
+                      <>
+                        {isLastStep ? 'Complete Setup' : 'Next'}
+                        {!isLastStep && <i className="ri-arrow-right-line ml-2"></i>}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </Form>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
   );
+  
 }

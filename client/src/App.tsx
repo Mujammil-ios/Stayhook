@@ -74,7 +74,7 @@ function Routes() {
   }
 
   // If not authenticated, show auth pages
-  if (!isAuthenticated && location !== "/onboarding") {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
         <Switch>
@@ -96,19 +96,18 @@ function Routes() {
   if (location === "/onboarding") {
     return (
       <Suspense fallback={<LoadingIndicator />}>
-         <Onboarding />
-    </Suspense>
-     );
-   }
+        <Onboarding />
+      </Suspense>
+    );
+  }
 
   return (
     <Layout key={location}>
       <Suspense fallback={<LoadingIndicator />}>
         <Switch>
-          <Route path="/" component={Dashboard} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/property" component={Property} />
-          <Route path="/onboarding" component={Property} />
+        <Route path="/" component={Dashboard} />
+  <Route path="/dashboard" component={Dashboard} />
+  <Route path="/property" component={Property} />
           <Route path="/rooms" component={Rooms} />
           <Route path="/bookings" component={Bookings} />
           <Route path="/reservations" component={Reservations} />
