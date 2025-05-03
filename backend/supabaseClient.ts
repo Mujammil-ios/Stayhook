@@ -40,9 +40,10 @@ export type Database = {
     };
   };
 };
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+const  supabaseUrl = "https://lkpsjrpssibtnqayzubh.supabase.co"
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrcHNqcnBzc2lidG5xYXl6dWJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3NjU2MjksImV4cCI6MjA2MTM0MTYyOX0.oI4DuBVTxijKWKlhi1lXAb5SFVAaA6Yag53ZIvggg2M"
+// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+// const supabaseAnonKey = "" || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Missing Supabase URL or anonymous key. Authentication may not work properly.');

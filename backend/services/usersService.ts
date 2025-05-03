@@ -6,39 +6,30 @@ import { buildFilterConditions, applyFilters } from '../utils/filters';
  * Represents a user in the system.
  */
 export interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  phone_number?: string;
-  avatar_url?: string;
-  is_active: boolean;
-  last_login?: string;
-  created_at: string;
-  updated_at: string;
+  id?: number;
+  username: string;
+  password: string;
+  staff_id?: number;
+  role: string;
 }
 
 /**
  * Input type for creating a new user.
  */
 export interface CreateUserInput {
-  email: string;
+  username: string;
   password: string;
-  first_name: string;
-  last_name: string;
-  phone_number?: string;
-  avatar_url?: string;
+  staff_id?: number;
+  role?: string;
 }
 
 /**
  * Filters for querying users.
  */
 export interface UserFilters {
-  email?: string;
-  name?: string;
-  is_active?: boolean;
-  role_id?: string;
-  property_id?: string;
+  username?: string;
+  role?: string;
+  staff_id?: number;
 }
 
 /**
@@ -57,40 +48,26 @@ export class UsersService extends SupabaseService<User> {
    * 
    * @param input - User creation data
    * @returns The created user
-   * 
-   * @rbac Super Admin can create any user, Property Owner can create staff users
    */
   async create(input: CreateUserInput): Promise<User> {
-    // First create the auth user
-    const { data: authData, error: authError } = await this.client.auth.admin.createUser({
-      email: input.email,
-      password: input.password,
-      user_metadata: {
-        first_name: input.first_name,
-        last_name: input.last_name
-      }
-    });
-    
-    if (authError) {
-      throw authError;
+    // Validate required fields
+    if (!input.username) {
+      throw new Error('Username is required');
     }
-    
-    // Then create the app user record
+    if (!input.password) {
+      throw new Error('Password is required');
+    }
+
     const userData = {
-      id: authData.user.id,
-      email: input.email,
-      first_name: input.first_name,
-      last_name: input.last_name,
-      phone_number: input.phone_number,
-      avatar_url: input.avatar_url,
-      is_active: true
+      username: input.username,
+      password: input.password,
+      role: input.role || 'user', // Default role if not provided
+      staff_id: input.staff_id
     };
     
     const { data, error } = await this.insert(userData);
     
     if (error) {
-      // If there's an error, try to clean up the auth user
-      await this.client.auth.admin.deleteUser(authData.user.id);
       throw error;
     }
     
@@ -102,10 +79,8 @@ export class UsersService extends SupabaseService<User> {
    * 
    * @param id - The user ID
    * @returns The user or null if not found
-   * 
-   * @rbac Super Admin, Property Owner (for their staff), User (their own profile)
    */
-  async getById(id: string): Promise<User | null> {
+  async getById(id: number): Promise<User | null> {
     const { data, error } = await this.select()
       .eq('id', id)
       .single();
@@ -121,16 +96,14 @@ export class UsersService extends SupabaseService<User> {
   }
   
   /**
-   * Get a user by email.
+   * Get a user by username.
    * 
-   * @param email - The user's email
+   * @param username - The user's username
    * @returns The user or null if not found
-   * 
-   * @rbac Super Admin, Property Owner
    */
-  async getByEmail(email: string): Promise<User | null> {
+  async getByUsername(username: string): Promise<User | null> {
     const { data, error } = await this.select()
-      .eq('email', email)
+      .eq('username', username)
       .single();
     
     if (error) {
@@ -150,8 +123,6 @@ export class UsersService extends SupabaseService<User> {
    * @param page - Page number (starts at 1)
    * @param limit - Number of items per page
    * @returns Array of users
-   * 
-   * @rbac Super Admin (all users), Property Owner (their staff)
    */
   async list(
     filters?: UserFilters, 
@@ -163,32 +134,9 @@ export class UsersService extends SupabaseService<User> {
     // Start with the base query
     let query = this.select().range(from, to);
     
-    // Handle special filters
+    // Apply filters if provided
     if (filters) {
-      // Handle name search (needs special treatment as it spans multiple columns)
-      const nameSearch = filters.name;
-      if (nameSearch) {
-        query = query.or(`first_name.ilike.%${nameSearch}%,last_name.ilike.%${nameSearch}%`);
-        delete filters.name;
-      }
-      
-      // Handle role filter (needs a join)
-      const roleId = filters.role_id;
-      if (roleId) {
-        query = query.eq('user_roles.role_id', roleId);
-        delete filters.role_id;
-      }
-      
-      // Handle property filter (needs a join)
-      const propertyId = filters.property_id;
-      if (propertyId) {
-        query = query.eq('user_properties.property_id', propertyId);
-        delete filters.property_id;
-      }
-      
-      // Apply remaining standard filters
       const conditions = buildFilterConditions(filters);
-      
       if (conditions.length > 0) {
         query = applyFilters(query, { conditions });
       }
@@ -213,25 +161,22 @@ export class UsersService extends SupabaseService<User> {
    * @param id - The user ID
    * @param payload - The data to update
    * @returns The updated user
-   * 
-   * @rbac Super Admin, Property Owner (for their staff), User (their own profile)
    */
-  async updateById(id: string, payload: Partial<User>): Promise<User> {
-    // If updating email, need to update auth user as well
-    if (payload.email) {
-      const { error: authError } = await this.client.auth.admin.updateUserById(
-        id,
-        { email: payload.email }
-      );
-      
-      if (authError) {
-        throw authError;
-      }
+  async updateById(id: number, payload: Partial<User>): Promise<User> {
+    // First get the current user to ensure we have all required fields
+    const currentUser = await this.getById(id);
+    if (!currentUser) {
+      throw new Error('User not found');
     }
+
+    const updateData = {
+      ...currentUser,
+      ...payload,
+      id // Ensure id is always set
+    };
     
-    // Update user record
     const { data, error } = await this.update(
-      payload, 
+      updateData, 
       { id }
     );
     
@@ -243,143 +188,16 @@ export class UsersService extends SupabaseService<User> {
   }
 
   /**
-   * Deactivate a user (soft delete).
-   * 
-   * @param id - The user ID to deactivate
-   * 
-   * @rbac Super Admin, Property Owner (for their staff)
-   */
-  async deactivateById(id: string): Promise<void> {
-    // Disable the auth user
-    const { error: authError } = await this.client.auth.admin.updateUserById(
-      id,
-      { banned: true }
-    );
-    
-    if (authError) {
-      throw authError;
-    }
-    
-    // Update the app user
-    const { error } = await this.update(
-      { is_active: false }, 
-      { id }
-    );
-    
-    if (error) {
-      throw error;
-    }
-  }
-  
-  /**
-   * Reactivate a user.
-   * 
-   * @param id - The user ID to reactivate
-   * 
-   * @rbac Super Admin, Property Owner (for their staff)
-   */
-  async reactivateById(id: string): Promise<void> {
-    // Re-enable the auth user
-    const { error: authError } = await this.client.auth.admin.updateUserById(
-      id,
-      { banned: false }
-    );
-    
-    if (authError) {
-      throw authError;
-    }
-    
-    // Update the app user
-    const { error } = await this.update(
-      { is_active: true }, 
-      { id }
-    );
-    
-    if (error) {
-      throw error;
-    }
-  }
-  
-  /**
-   * Delete a user completely (hard delete).
+   * Delete a user by ID.
    * 
    * @param id - The user ID to delete
-   * 
-   * @rbac Super Admin only
    */
-  async deleteById(id: string): Promise<void> {
-    // Delete the auth user first
-    const { error: authError } = await this.client.auth.admin.deleteUser(id);
-    
-    if (authError) {
-      throw authError;
-    }
-    
-    // Delete the app user
+  async deleteById(id: number): Promise<void> {
     const { error } = await this.delete({ id });
     
     if (error) {
       throw error;
     }
-  }
-  
-  /**
-   * Assign a user to a property.
-   * 
-   * @param userId - The user ID
-   * @param propertyId - The property ID
-   * 
-   * @rbac Super Admin, Property Owner (their own properties)
-   */
-  async assignUserToProperty(userId: string, propertyId: string): Promise<void> {
-    const { error } = await this.client
-      .from('public.user_properties')
-      .insert({ user_id: userId, property_id: propertyId });
-    
-    if (error) {
-      throw error;
-    }
-  }
-  
-  /**
-   * Remove a user from a property.
-   * 
-   * @param userId - The user ID
-   * @param propertyId - The property ID
-   * 
-   * @rbac Super Admin, Property Owner (their own properties)
-   */
-  async removeUserFromProperty(userId: string, propertyId: string): Promise<void> {
-    const { error } = await this.client
-      .from('public.user_properties')
-      .delete()
-      .eq('user_id', userId)
-      .eq('property_id', propertyId);
-    
-    if (error) {
-      throw error;
-    }
-  }
-  
-  /**
-   * Get properties for a user.
-   * 
-   * @param userId - The user ID
-   * @returns Array of property IDs the user is assigned to
-   * 
-   * @rbac Super Admin, Property Owner (for their staff), Staff (for themselves)
-   */
-  async getPropertiesForUser(userId: string): Promise<string[]> {
-    const { data, error } = await this.client
-      .from('public.user_properties')
-      .select('property_id')
-      .eq('user_id', userId);
-    
-    if (error) {
-      throw error;
-    }
-    
-    return data.map((item: any) => item.property_id);
   }
 }
 

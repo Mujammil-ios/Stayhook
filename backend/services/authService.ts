@@ -16,10 +16,9 @@ export interface AuthCredentials {
 export interface UserProfile {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  avatarUrl?: string;
+  full_name: string;
+  role_id: string;
+  is_active: boolean;
 }
 
 /**
@@ -48,10 +47,8 @@ export const signupSchema = z.object({
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number')
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
-  firstName: z.string().min(2, 'First name is required'),
-  lastName: z.string().min(2, 'Last name is required'),
-  phoneNumber: z.string().optional(),
-  inviteToken: z.string().optional()
+  full_name: z.string().min(2, 'Full name is required'),
+  role_id: z.string().uuid('Valid role ID is required')
 });
 
 export const resetPasswordSchema = z.object({
@@ -237,27 +234,19 @@ export class AuthService {
   async signUp(userData: {
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber?: string;
-    inviteToken?: string;
+    full_name: string;
+    role_id: string;
   }): Promise<User> {
     const validatedData = signupSchema.parse(userData);
     
-    // Check if this is an invited user
-    if (validatedData.inviteToken) {
-      return this.acceptInvitation(validatedData);
-    }
-    
-    // Regular signup
+    // Create the auth user
     const { data, error } = await this.client.auth.signUp({
       email: validatedData.email,
       password: validatedData.password,
       options: {
         data: {
-          first_name: validatedData.firstName,
-          last_name: validatedData.lastName,
-          phone_number: validatedData.phoneNumber
+          full_name: validatedData.full_name,
+          role_id: validatedData.role_id
         }
       }
     });
@@ -450,10 +439,9 @@ export class AuthService {
   async updateProfile(profile: Partial<UserProfile>): Promise<User> {
     const { data, error } = await this.client.auth.updateUser({
       data: {
-        first_name: profile.firstName,
-        last_name: profile.lastName,
-        phone_number: profile.phoneNumber,
-        avatar_url: profile.avatarUrl
+        first_name: profile.full_name,
+        role_id: profile.role_id,
+        is_active: profile.is_active
       }
     });
     

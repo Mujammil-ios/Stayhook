@@ -1,31 +1,47 @@
 import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { TextInput } from '@/components/forms/text-input';
-import { CheckboxInput } from '@/components/forms/checkbox-input';
-import { SelectInput } from '@/components/forms/select-input';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { authService } from '@/services/authService';
 
 export default function Signup() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const router = useRouter();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('admin');
+  const [role, setRole] = useState('user');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
-    name?: string;
-    email?: string;
+    username?: string;
     password?: string;
     confirmPassword?: string;
     agreeTerms?: string;
   }>({});
-  
-  const [_, setLocation] = useLocation();
-  const { signup } = useAuth();
-  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const result = await authService.signIn({
+        email: username,
+        password,
+      });
+
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Signup error:', error);
+      setErrors({
+        username: 'Failed to create account',
+        password: 'Failed to create account'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Password strength
   const getPasswordStrength = (password: string): { strength: number; text: string; color: string } => {
@@ -52,78 +68,6 @@ export default function Signup() {
     };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Reset errors
-    setErrors({});
-    
-    // Validate form
-    const newErrors: {
-      name?: string;
-      email?: string;
-      password?: string;
-      confirmPassword?: string;
-      agreeTerms?: string;
-    } = {};
-    
-    if (!name) newErrors.name = 'Name is required';
-    if (!email) newErrors.email = 'Email is required';
-    if (!password) newErrors.password = 'Password is required';
-    if (password && password.length < 8) newErrors.password = 'Password must be at least 8 characters';
-    if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    if (!agreeTerms) newErrors.agreeTerms = 'You must agree to the terms and conditions';
-    
-    // If errors, show them and return
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    
-    // Start loading
-    setIsLoading(true);
-    
-    try {
-      // Attempt signup
-      const result = await signup(name, email, password, role as 'admin' | 'manager' | 'staff');
-      
-      if (result.success) {
-        // Show success toast
-        toast({
-          title: "Account created",
-          description: "Your account has been created successfully",
-          variant: "default",
-        });
-        
-        // Redirect to onboarding instead of dashboard
-        setLocation('/onboarding');
-      } else {
-        // Show error toast
-        toast({
-          title: "Signup failed",
-          description: result.message || "There was an error creating your account",
-          variant: "destructive",
-        });
-        
-        // Set field errors if available
-        if (result.message?.toLowerCase().includes('email')) {
-          setErrors(prev => ({ ...prev, email: result.message }));
-        } else if (result.message?.toLowerCase().includes('password')) {
-          setErrors(prev => ({ ...prev, password: result.message }));
-        }
-      }
-    } catch (error) {
-      console.error('Signup error:', error);
-      toast({
-        title: "An error occurred",
-        description: "Please try again later",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const passwordStrength = getPasswordStrength(password);
 
   return (
@@ -139,31 +83,19 @@ export default function Signup() {
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <TextInput
-                id="name"
-                label="Full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your full name"
+              <Input
+                id="username"
+                label="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
                 required
                 icon="ri-user-line"
-                error={errors.name}
-              />
-              
-              <TextInput
-                id="email"
-                label="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                type="email"
-                required
-                icon="ri-mail-line"
-                error={errors.email}
+                error={errors.username}
               />
               
               <div className="space-y-1">
-                <TextInput
+                <Input
                   id="password"
                   label="Password"
                   value={password}
@@ -190,7 +122,7 @@ export default function Signup() {
                 )}
               </div>
               
-              <TextInput
+              <Input
                 id="confirmPassword"
                 label="Confirm password"
                 value={confirmPassword}
@@ -208,6 +140,7 @@ export default function Signup() {
                 value={role}
                 onChange={(value) => setRole(value)}
                 options={[
+                  { value: 'user', label: 'User' },
                   { value: 'admin', label: 'Administrator' },
                   { value: 'manager', label: 'Property Manager' },
                   { value: 'staff', label: 'Staff Member' },
@@ -260,7 +193,7 @@ export default function Signup() {
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
               Already have an account?{' '}
               <button 
-                onClick={() => setLocation('/login')}
+                onClick={() => router.push('/login')}
                 className="text-primary hover:underline font-medium"
               >
                 Sign in

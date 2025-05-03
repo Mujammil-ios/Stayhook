@@ -1,77 +1,40 @@
 import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { TextInput } from '@/components/forms/text-input';
 import { CheckboxInput } from '@/components/forms/checkbox-input';
 
+import { authService } from '@/services/authService';
+
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const router = useRouter();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{email?: string; password?: string}>({});
-  
-  const [_, setLocation] = useLocation();
-  const { login } = useAuth();
-  const { toast } = useToast();
+  const [errors, setErrors] = useState<{username?: string; password?: string}>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Reset errors
-    setErrors({});
-    
-    // Validate form
-    const newErrors: {email?: string; password?: string} = {};
-    if (!email) newErrors.email = 'Email is required';
-    if (!password) newErrors.password = 'Password is required';
-    
-    // If errors, show them and return
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    
-    // Start loading
     setIsLoading(true);
-    
+    setErrors({});
+
     try {
-      // Attempt login
-      const result = await login(email, password);
-      
-      if (result.success) {
-        // Show success toast
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-          variant: "default",
-        });
-        
-        // Redirect to dashboard
-        setLocation('/dashboard');
-      } else {
-        // Show error toast
-        toast({
-          title: "Login failed",
-          description: result.message || "Invalid email or password",
-          variant: "destructive",
-        });
-        
-        // Set field errors if available
-        if (result.message?.toLowerCase().includes('email')) {
-          setErrors(prev => ({ ...prev, email: result.message }));
-        } else if (result.message?.toLowerCase().includes('password')) {
-          setErrors(prev => ({ ...prev, password: result.message }));
-        }
+      const { user, session } = await authService.signIn({
+        email: username,
+        password,
+      });
+
+      if (user && session) {
+        router.push('/dashboard');
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast({
-        title: "An error occurred",
-        description: "Please try again later",
-        variant: "destructive",
+      setErrors({
+        username: 'Invalid username or password',
+        password: 'Invalid username or password'
       });
     } finally {
       setIsLoading(false);
@@ -92,15 +55,14 @@ export default function Login() {
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <TextInput
-                id="email"
-                label="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                type="email"
+                id="username"
+                label="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
                 required
-                icon="ri-mail-line"
-                error={errors.email}
+                icon="ri-user-line"
+                error={errors.username}
               />
               
               <TextInput
@@ -125,7 +87,7 @@ export default function Login() {
                 
                 <button 
                   type="button" 
-                  onClick={() => setLocation('/forgot-password')}
+                  onClick={() => router.push('/forgot-password')}
                   className="text-sm text-primary hover:underline"
                 >
                   Forgot password?
@@ -151,7 +113,7 @@ export default function Login() {
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
               Don't have an account?{' '}
               <button 
-                onClick={() => setLocation('/signup')}
+                onClick={() => router.push('/signup')}
                 className="text-primary hover:underline font-medium"
               >
                 Sign up
